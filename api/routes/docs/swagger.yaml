@@ -1,0 +1,19 @@
+openapi: 3.0.0
+info:
+  description: Documentation of the GoProcess API. 
+  version: "1.0"
+  title: GoProcess API
+tags:
+  - name: Basic Operations
+paths:
+  /ping:
+    get:
+      tags:
+        - Basic Operations
+      summary: Ping
+      description: Check if API is on
+      responses:
+        '200':
+          description: OK
+          content:
+            none: {}

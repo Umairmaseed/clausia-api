@@ -1,0 +1,24 @@
+version: "3.7"
+
+networks:
+  goprocess-cc-net:
+    external: true
+
+services:
+  api:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    container_name: goprocess-api
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    env_file:
+      - .env
+    working_dir: /api
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
+    volumes:
+      - ./:/api
+    networks:
+      - goprocess-cc-net
