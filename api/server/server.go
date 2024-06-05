@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/goledgerdev/goprocess-api/api/routes"
+	"github.com/goledgerdev/goprocess-api/certs"
 	"github.com/goledgerdev/goprocess-api/env"
 )
 
@@ -35,6 +37,12 @@ func Serve(r *gin.Engine, ctx context.Context) {
 
 	// Returns a http.Server from provided handler
 	srv := defaultServer(r, port)
+
+	// Init CA manager
+	err := initCAMngr()
+	if err != nil {
+		log.Panic(err)
+	}
 
 	// listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 	go func(server *http.Server) {
@@ -89,4 +97,14 @@ func ServeSync(ctx context.Context, wg *sync.WaitGroup) {
 		log.Panic(err)
 	}
 	log.Println("Shutting down")
+}
+
+func initCAMngr() error {
+
+	caMngr, err := certs.InitCAMngr(os.Getenv("SDK_CONFIG_PATH"), os.Getenv("CA_URL"))
+	if caMngr == nil {
+		log.Printf("Error initializing CA manager: %v", err)
+		return errors.New("could not init CA manager")
+	}
+	return nil
 }
