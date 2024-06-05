@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/goledgerdev/goprocess-api/api/handlers/auth"
+	"github.com/goledgerdev/goprocess-api/api/handlers/documents"
 	"github.com/goledgerdev/goprocess-api/api/routes/docs"
 
 	swaggerfiles "github.com/swaggo/files"
@@ -29,13 +30,15 @@ func AddRoutesToEngine(r *gin.Engine) {
 	r.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/api-docs/index.html")
 	})
-	r.Use(a.AuthMiddleware())
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "ok",
 		})
 	})
+
+	r.Use(a.AuthMiddleware())
+	r.POST("/uploaddocument", documents.UploadDocument)
 
 	// serve swagger files
 	docs.SwaggerInfo.BasePath = "/api"
