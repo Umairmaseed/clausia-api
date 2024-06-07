@@ -1,0 +1,105 @@
+FROM golang:1.15
+
+RUN apt-get update\
+    && apt-get install -y g++ make openconnect libssl-dev libpodofo-dev git catch sudo zsh curl gnupg telnet fontconfig
+
+
+ADD https://github.com/Kitware/CMake/releases/download/v3.20.0-rc1/cmake-3.20.0-rc1-Linux-x86_64.sh /cmake-3.20.0-rc1-Linux-x86_64.sh
+RUN mkdir /opt/cmake
+RUN sh /cmake-3.20.0-rc1-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
+RUN ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+RUN cmake --version
+
+ADD ./pdf-lib /pdf-lib
+RUN cd /pdf-lib \
+    && rm -rf build/* \
+    && mkdir -p build \
+    && cd build && cmake .. \
+    && cd /pdf-lib && ./buildInstall.sh
+
+RUN apt-get install -y apt-transport-https ca-certificates curl gnupg2 lsb-release \
+    && curl -fsSL https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]')/gpg | apt-key add - 2>/dev/null \
+    && echo "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]') $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list \
+    && apt-get update \
+    && apt-get install -y docker-ce-cli
+
+RUN curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+RUN chmod +x /usr/local/bin/docker-compose
+
+ARG USERNAME=gosigndev
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+# Create the user
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    #
+    # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+# ********************************************************
+# * Anything else you want to do like clean up goes here *
+# ********************************************************
+
+RUN echo "#!/bin/sh\n\
+    sudoIf() { if [ \"\$(id -u)\" -ne 0 ]; then sudo \"\$@\"; else \"\$@\"; fi }\n\
+    SOCKET_GID=\$(stat -c '%g' /var/run/docker.sock) \n\
+    if [ \"${SOCKET_GID}\" != '0' ]; then\n\
+    if [ \"\$(cat /etc/group | grep :\${SOCKET_GID}:)\" = '' ]; then sudoIf groupadd --gid \${SOCKET_GID} docker-host; fi \n\
+    if [ \"\$(id ${USERNAME} | grep -E \"groups=.*(=|,)\${SOCKET_GID}\(\")\" = '' ]; then sudoIf usermod -aG \${SOCKET_GID} ${USERNAME}; fi\n\
+    fi\n\
+    exec \"\$@\"" > /usr/local/share/docker-init.sh \
+    && chmod +x /usr/local/share/docker-init.sh
+
+
+# [Optional] Set the default user. Omit if you want to keep the default as root.
+USER $USERNAME
+
+
+RUN go get github.com/uudashr/gopkgs/v2/cmd/gopkgs 
+RUN go get github.com/ramya-rao-a/go-outline
+RUN go get github.com/cweill/gotests/... 
+RUN go get github.com/fatih/gomodifytags 
+RUN go get github.com/josharian/impl 
+RUN go get github.com/haya14busa/goplay/cmd/goplay 
+RUN go get github.com/go-delve/delve/cmd/dlv 
+RUN go get golang.org/x/lint/golint 
+
+# set home
+ENV HOME /home/$USERNAME
+ENV DOCKERDEV "TRUE"
+ENV TERM xterm
+
+# Set the default shell to bash rather than sh
+ENV SHELL /bin/zsh
+
+# run the installation script  
+RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
+
+# install powerlevel10k
+RUN git clone https://github.com/romkatv/powerlevel10k.git ~/.oh-my-zsh/custom/themes/powerlevel10k
+
+RUN cd $HOME && curl -fsSLO https://raw.githubusercontent.com/romkatv/dotfiles-public/master/.purepower
+
+# zsh configuration
+ADD ./.devcontainer/.zshrc $HOME
+ADD ./.devcontainer/.p10k.zsh $HOME
+
+WORKDIR /home/gosigndev/go-sign
+RUN sudo mkdir /commandhistory
+RUN sudo chown $USERNAME /commandhistory
+
+RUN mkdir -p /home/gosigndev/.fonts
+COPY ./fonts/Roboto-Light.ttf /home/gosigndev/.fonts
+COPY ./fonts/Roboto-Thin.ttf /home/gosigndev/.fonts
+COPY ./fonts/OpenSans-Light.ttf /home/gosigndev/.fonts
+
+RUN fc-cache -f -v
+
+# Setting the ENTRYPOINT to docker-init.sh will configure non-root access 
+# to the Docker socket. The script will also execute CMD as needed.
+ENTRYPOINT [ "/usr/local/share/docker-init.sh" ]
+CMD [ "sleep", "infinity" ]
