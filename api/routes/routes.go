@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/goledgerdev/goprocess-api/api/handlers/auth"
 	"github.com/goledgerdev/goprocess-api/api/routes/docs"
 
 	swaggerfiles "github.com/swaggo/files"
@@ -13,9 +14,22 @@ import (
 
 // Register routes and handlers used by engine
 func AddRoutesToEngine(r *gin.Engine) {
+
+	a := auth.NewAuth()
+
+	r.POST("/login", a.SignIn)
+	r.POST("/signup", a.SignUp)
+	r.POST("/otp", a.VerifyAccount)
+	r.POST("/logout", a.SignOut)
+	r.POST("/changepw", a.ChangePassword)
+	r.POST("/forgotpw", a.ForgotPassword)
+	r.POST("/confirmforgotpw", a.ConfirmForgotPassword)
+	r.POST("/resend", a.ResendCode)
+
 	r.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/api-docs/index.html")
 	})
+	r.Use(a.AuthMiddleware())
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
