@@ -16,7 +16,7 @@ func UploadFileToS3(file []byte, fileName string) (string, error) {
 	}
 
 	bucketName := os.Getenv("S3_BUCKET_NAME")
-	filename := "/documents/" + fileName
+	filename := "documents/" + fileName
 	err = s3Client.UploadDocument(file, filename, bucketName)
 	if err != nil {
 		logger.Error(err)
