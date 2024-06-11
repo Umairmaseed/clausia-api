@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Start the Docker containers
-docker-compose up -d
+docker-compose up -d --build
 
 # Run the script to copy the tls-cert.pem
 ./copy-tls-cert.sh
