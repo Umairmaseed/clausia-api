@@ -7,7 +7,7 @@ import (
 	"github.com/google/logger"
 )
 
-func UploadFileToS3(file []byte, fileName string) (string, error) {
+func UploadSignedDocToS3(file []byte, fileName string) (string, error) {
 	s3Client, err := s3.NewS3Client()
 	if err != nil {
 		logger.Error(err)
@@ -16,7 +16,7 @@ func UploadFileToS3(file []byte, fileName string) (string, error) {
 	}
 
 	bucketName := os.Getenv("S3_BUCKET_NAME")
-	filename := "documents/" + fileName
+	filename := "sign-documents/" + fileName
 	err = s3Client.UploadDocument(file, filename, bucketName)
 	if err != nil {
 		logger.Error(err)

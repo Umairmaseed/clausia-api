@@ -3,6 +3,7 @@ package s3
 import (
 	"bytes"
 	"context"
+	"io"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -38,4 +39,19 @@ func (c *S3Client) UploadDocument(file []byte, filename, bucketName string) erro
 	})
 
 	return err
+}
+
+func (c *S3Client) DownloadDocument(ctx context.Context, filename, bucketName string) ([]byte, error) {
+	output, err := c.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(filename),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	buf := &bytes.Buffer{}
+	_, err = io.Copy(buf, output.Body)
+
+	return buf.Bytes(), err
 }

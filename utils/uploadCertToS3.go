@@ -16,7 +16,7 @@ func UploadCertToS3(cert []byte, certName string) (string, error) {
 
 	bucketName := os.Getenv("S3_BUCKET_NAME")
 
-	filename := "/certificates/" + certName
+	filename := "certificates/" + certName
 
 	err = s3Client.UploadDocument(cert, filename, bucketName)
 	if err != nil {

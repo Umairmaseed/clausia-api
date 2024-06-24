@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/gin-gonic/gin"
 	"github.com/goledgerdev/goprocess-api/api/handlers/certs"
+	"github.com/goledgerdev/goprocess-api/chaincode"
 	"github.com/goledgerdev/goprocess-api/utils"
 	"github.com/google/logger"
 
@@ -17,6 +18,8 @@ type signUpForm struct {
 	Password string `json:"password" binding:"required"`
 	Email    string `json:"email" binding:"required"`
 	Name     string `json:"name" binding:"required"`
+	CPF      string `json:"cpf" binding:"required"`
+	Phone    string `json:"phone" binding:"required"`
 }
 
 func (a *Auth) SignUp(c *gin.Context) {
@@ -30,6 +33,8 @@ func (a *Auth) SignUp(c *gin.Context) {
 	username := form.Username
 	password := form.Password
 	email := form.Email
+	cpf := form.CPF
+	phone := form.Phone
 
 	var secretHash string
 
@@ -55,6 +60,13 @@ func (a *Auth) SignUp(c *gin.Context) {
 	}
 
 	out, err := a.CognitoClient.SignUp(user)
+	if err != nil {
+		logger.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	_, err = chaincode.CreateSignerTransaction(cpf, email, form.Name, phone)
 	if err != nil {
 		logger.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())
