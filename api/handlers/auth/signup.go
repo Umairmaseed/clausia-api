@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/gin-gonic/gin"
+	"github.com/goledgerdev/goprocess-api/api/handlers/certs"
 	"github.com/goledgerdev/goprocess-api/utils"
 	"github.com/google/logger"
 
@@ -54,6 +55,21 @@ func (a *Auth) SignUp(c *gin.Context) {
 	}
 
 	out, err := a.CognitoClient.SignUp(user)
+	if err != nil {
+		logger.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	cert, err := certs.CreateIdentityHandler(c, username, form.Name, password)
+	if err != nil {
+		logger.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	certName := username + "_cert.pfx"
+	_, err = utils.UploadCertToS3(cert, certName)
 	if err != nil {
 		logger.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())

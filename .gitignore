@@ -22,3 +22,5 @@ go.work
 
 .env
 .aws
+.cryptopath
+config/tlscert.pem

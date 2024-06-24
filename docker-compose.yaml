@@ -22,3 +22,24 @@ services:
       - ./:/api
     networks:
       - goprocess-cc-net
+
+  ca.goprocess.org:
+    image: hyperledger/fabric-ca:1.5
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca-goprocess
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_PORT=10054
+      - FABRIC_CA_SERVER_COMPATIBILITY_MODE_V1_3=false
+    ports:
+      - "10054:10054"
+    working_dir: /etc/hyperledger/fabric-ca-server
+    command: sh -c 'rm ca-cert.pem ca-key.pem; fabric-ca-server start -b admin:adminpw -d --cfg.identities.allowremove --cfg.affiliations.allowremove'
+    volumes:
+      - type: bind
+        source: ./config/fabric-ca-server-config.yaml
+        target: /etc/hyperledger/fabric-ca-server/fabric-ca-server-config.yaml
+        read_only: true
+    container_name: ca.goprocess.org
+    networks:
+      - goprocess-cc-net
