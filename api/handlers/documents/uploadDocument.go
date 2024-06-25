@@ -25,6 +25,23 @@ func UploadDocument(c *gin.Context) {
 		logger.Error(err)
 		c.String(http.StatusBadRequest, err.Error())
 	}
+	email := c.Request.Header.Get("Email")
+	if email == "" {
+		logger.Error("Email not found in headers")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email not found in headers"})
+		return
+	}
+
+	signerKey, err := utils.SearchAndReturnSignerKey(email)
+	if err != nil {
+		logger.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ownerMap := chaincode.Signer{
+		Key: signerKey,
+	}
 
 	fileHashes := make([]string, len(form.Files))
 
@@ -62,6 +79,7 @@ func UploadDocument(c *gin.Context) {
 			RequiredSignatures: requiredSignatures,
 			OriginalDocURL:     s3Url,
 			Name:               filename,
+			Owner:              ownerMap,
 		})
 		if err != nil {
 			logger.Error(err)
