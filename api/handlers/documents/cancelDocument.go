@@ -58,9 +58,6 @@ func CancelDocument(c *gin.Context) {
 		return
 	}
 
-	logger.Infof("owner %v", ownerKey)
-	logger.Infof("signerKey %v", signerKey)
-
 	if ownerKey != signerKey {
 		logger.Error("User not authorized to changed the status of the document")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User not authorized to changed the status of the document"})
