@@ -60,16 +60,8 @@ func SignDocument(c *gin.Context) {
 	requiredSignatures, _ := asset["requiredSignatures"].([]interface{})
 	successfulSignatures, _ := asset["successfulSignatures"].([]interface{})
 	rejectedSignatures := asset["rejectedSignatures"].([]interface{})
-	ownerMap, ok := asset["owner"].(map[string]interface{})
-	if !ok {
-		errorhandler.ReturnError(c, err, "Owner is not a valid map", http.StatusInternalServerError)
-		return
-	}
-	ownerKey, ok := ownerMap["@key"].(string)
-	if !ok {
-		errorhandler.ReturnError(c, err, "Owner key not found", http.StatusInternalServerError)
-		return
-	}
+	ownerMap, _ := asset["owner"].(map[string]interface{})
+	ownerKey, _ := ownerMap["@key"].(string)
 	owner := chaincode.Signer{Key: ownerKey}
 	username := form.Username
 
