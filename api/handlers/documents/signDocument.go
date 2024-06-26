@@ -18,11 +18,12 @@ import (
 )
 
 type signForm struct {
-	DocKey    string `form:"dockey" binding:"required"`
-	Password  string `form:"password" binding:"required"`
-	Signature string `form:"signature" binding:"required"`
-	Username  string `form"username" binding:"required"`
-	Cpf       string `form"cpf" binding:"required"`
+	DocKey           string `form:"dockey" binding:"required"`
+	Password         string `form:"password" binding:"required"`
+	Signature        string `form:"signature" binding:"required"`
+	Username         string `form"username" binding:"required"`
+	Cpf              string `form"cpf" binding:"required"`
+	RejectSignatures bool   `form"rejectsignature" binding:"required"`
 }
 
 type signResponse struct {
@@ -45,6 +46,7 @@ func SignDocument(c *gin.Context) {
 		errorhandler.ReturnError(c, err, "Failed to bind form data", http.StatusBadRequest)
 		return
 	}
+	var SignDocument bool = form.RejectSignatures
 
 	// Retrieving document from blockchain
 	asset, err := chaincode.GetDoc(form.DocKey)
@@ -119,6 +121,41 @@ func SignDocument(c *gin.Context) {
 			errorhandler.ReturnError(c, err, "Document already signed by the signer", http.StatusForbidden)
 			return
 		}
+	}
+
+	// if Signer reject to sign the document
+	if !SignDocument {
+
+		requiredSigners := convertToSigners(requiredSignatures)
+		successfulSigners := convertToSigners(successfulSignatures)
+		rejectedSigners := convertToSigners(rejectedSignatures)
+		rejectedSigners = append(rejectedSigners, chaincode.Signer{Key: ledgerKey})
+
+		if len(successfulSigners)+len(rejectedSigners) == len(requiredSigners) {
+			status = 4
+		} else {
+			status = 0
+		}
+
+		rejectedDoc, err := chaincode.UploadDocumentTransaction(chaincode.FileAsset{
+			OriginalHash:         originalHash,
+			Status:               int(status),
+			RequiredSignatures:   requiredSigners,
+			OriginalDocURL:       originalDocURL,
+			Name:                 fileName,
+			RejectedSignatures:   rejectedSigners,
+			SuccessfulSignatures: successfulSigners,
+			FinalHash:            asset["finalHash"].(string),
+			FinalDocURL:          finalDocURL,
+			Owner:                owner,
+		})
+		if err != nil {
+			errorhandler.ReturnError(c, err, "failed to save document to ledger:", http.StatusInternalServerError)
+			c.Abort()
+			return
+		}
+		c.JSON(http.StatusOK, rejectedDoc)
+		return
 	}
 
 	bucketName := os.Getenv("S3_BUCKET_NAME")
@@ -229,6 +266,14 @@ func SignDocument(c *gin.Context) {
 	}
 
 	rejectedSigners := convertToSigners(rejectedSignatures)
+
+	if len(successfulSigners) == len(requiredSigners) {
+		status = 3
+	} else if len(successfulSigners)+len(rejectedSigners) == len(requiredSigners) {
+		status = 4
+	} else {
+		status = 0
+	}
 
 	// Updating doc asset state
 	_, err = chaincode.UploadDocumentTransaction(chaincode.FileAsset{
