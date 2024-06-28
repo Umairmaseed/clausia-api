@@ -66,6 +66,7 @@ func SignDocument(c *gin.Context) {
 	ownerKey, _ := ownerMap["@key"].(string)
 	owner := chaincode.Signer{Key: ownerKey}
 	username := form.Username
+	timeout := asset["timeout"].(string)
 
 	finalDocURL, ok := asset["finalDocURL"].(string)
 	if ok {
@@ -148,6 +149,7 @@ func SignDocument(c *gin.Context) {
 			FinalHash:            asset["finalHash"].(string),
 			FinalDocURL:          finalDocURL,
 			Owner:                owner,
+			Timeout:              timeout,
 		})
 		if err != nil {
 			errorhandler.ReturnError(c, err, "failed to save document to ledger:", http.StatusInternalServerError)
@@ -287,6 +289,7 @@ func SignDocument(c *gin.Context) {
 		FinalHash:            signedDocHash,
 		FinalDocURL:          signedDocUrl,
 		Owner:                owner,
+		Timeout:              timeout,
 	})
 	if err != nil {
 		errorhandler.ReturnError(c, err, "failed to save document to ledger:", http.StatusInternalServerError)
