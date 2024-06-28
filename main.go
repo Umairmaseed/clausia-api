@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/goledgerdev/goprocess-api/api/handlers/documents"
 	"github.com/goledgerdev/goprocess-api/api/server"
 )
 
@@ -29,6 +30,20 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+
+	// Start the routine to check for expired documents
+	go func() {
+		ticker := time.NewTicker(1 * time.Minute) // Adjust the interval as needed
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				documents.CheckExpiredDocs()
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
 
 	go server.Serve(r, ctx)
 
