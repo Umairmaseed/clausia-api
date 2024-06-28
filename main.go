@@ -31,9 +31,29 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
+	// Get the unit from environment variable
+	unitStr := os.Getenv("CHECK_INTERVAL_UNIT")
+	if unitStr == "" {
+		unitStr = "minute"
+	}
+
+	var duration time.Duration
+	switch unitStr {
+	case "second":
+		duration = 1 * time.Second
+	case "minute":
+		duration = 1 * time.Minute
+	case "hour":
+		duration = 1 * time.Hour
+	case "day":
+		duration = 24 * time.Hour
+	default:
+		duration = 1 * time.Minute
+	}
+
 	// Start the routine to check for expired documents
 	go func() {
-		ticker := time.NewTicker(1 * time.Minute) // Adjust the interval as needed
+		ticker := time.NewTicker(duration)
 		defer ticker.Stop()
 		for {
 			select {
