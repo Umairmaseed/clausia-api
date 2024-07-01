@@ -13,6 +13,7 @@ type FileAsset struct {
 	Name                 string    `json:"name"`
 	Signature            Signature `json:"signature"`
 	Owner                Signer    `json:"owner"`
+	Timeout              string    `json:"timeout"`
 }
 
 type Signer struct {

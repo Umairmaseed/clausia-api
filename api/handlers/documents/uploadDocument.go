@@ -16,6 +16,7 @@ import (
 type uploadDocumentForm struct {
 	Files              []*multipart.FileHeader `form:"files" binding:"required"`
 	RequiredSignatures string                  `form:"requiredSignatures" binding:"required"`
+	Timeout            string                  `form:"timeout" binding:"required"`
 }
 
 func UploadDocument(c *gin.Context) {
@@ -25,6 +26,9 @@ func UploadDocument(c *gin.Context) {
 		logger.Error(err)
 		c.String(http.StatusBadRequest, err.Error())
 	}
+
+	timeout := form.Timeout
+
 	email := c.Request.Header.Get("Email")
 	if email == "" {
 		logger.Error("Email not found in headers")
@@ -80,6 +84,7 @@ func UploadDocument(c *gin.Context) {
 			OriginalDocURL:     s3Url,
 			Name:               filename,
 			Owner:              ownerMap,
+			Timeout:            timeout,
 		})
 		if err != nil {
 			logger.Error(err)

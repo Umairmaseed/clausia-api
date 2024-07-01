@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/goledgerdev/goprocess-api/api/handlers/documents"
 	"github.com/goledgerdev/goprocess-api/api/server"
 )
 
@@ -29,6 +30,40 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+
+	// Get the unit from environment variable
+	unitStr := os.Getenv("CHECK_INTERVAL_UNIT")
+	if unitStr == "" {
+		unitStr = "minute"
+	}
+
+	var duration time.Duration
+	switch unitStr {
+	case "second":
+		duration = 1 * time.Second
+	case "minute":
+		duration = 1 * time.Minute
+	case "hour":
+		duration = 1 * time.Hour
+	case "day":
+		duration = 24 * time.Hour
+	default:
+		duration = 1 * time.Minute
+	}
+
+	// Start the routine to check for expired documents
+	go func() {
+		ticker := time.NewTicker(duration)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				documents.CheckExpiredDocs()
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
 
 	go server.Serve(r, ctx)
 

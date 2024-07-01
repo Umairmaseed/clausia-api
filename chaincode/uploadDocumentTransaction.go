@@ -30,6 +30,7 @@ func UploadDocumentTransaction(f FileAsset) (map[string]interface{}, error) {
 		"rejectedSignatures":   rejectedSignatureSlice,
 		"successfulSignatures": successfulSignatureSlice,
 		"owner":                f.Owner,
+		"timeout":              f.Timeout,
 	}
 	if f.FinalHash != "" {
 		reqMap["finalHash"] = f.FinalHash
