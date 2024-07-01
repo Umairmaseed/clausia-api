@@ -11,19 +11,19 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cloudflare/cfssl/log"
 	"github.com/gin-gonic/gin"
+	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
 	"github.com/goledgerdev/goprocess-api/chaincode"
 	"github.com/goledgerdev/goprocess-api/utils"
-	"github.com/google/logger"
 )
 
 type signForm struct {
-	DocKey    string `form:"dockey" binding:"required"`
-	Password  string `form:"password" binding:"required"`
-	Signature string `form:"signature" binding:"required"`
-	Username  string `form"username" binding:"required"`
-	Cpf       string `form"cpf" binding:"required"`
+	DocKey           string `form:"dockey" binding:"required"`
+	Password         string `form:"password" binding:"required"`
+	Signature        string `form:"signature" binding:"required"`
+	Username         string `form"username" binding:"required"`
+	Cpf              string `form"cpf" binding:"required"`
+	RejectSignatures bool   `form"rejectsignature" binding:"required"`
 }
 
 type signResponse struct {
@@ -38,84 +38,70 @@ type signResponse struct {
 }
 
 func SignDocument(c *gin.Context) {
+
 	var form signForm
 	var retrieveOriginalDocURL bool = true
+
 	if err := c.ShouldBind(&form); err != nil {
-		log.Error("Failed to bind form data", err)
-		c.String(http.StatusBadRequest, "Failed to bind form data: "+err.Error())
+		errorhandler.ReturnError(c, err, "Failed to bind form data", http.StatusBadRequest)
 		return
 	}
+	var SignDocument bool = form.RejectSignatures
 
+	// Retrieving document from blockchain
 	asset, err := chaincode.GetDoc(form.DocKey)
 	if err != nil {
-		log.Error("Failed to retrieve document asset", err)
-		c.String(http.StatusInternalServerError, "Failed to retrieve document asset: "+err.Error())
+		errorhandler.ReturnError(c, err, "Failed to retrieve document asset", http.StatusInternalServerError)
 		return
 	}
 
-	originalDocURL, ok := asset["originalDocURL"].(string)
-	if !ok {
-		log.Error("Invalid document asset: missing filename")
-		c.String(http.StatusInternalServerError, "Invalid document asset: missing filename")
-		return
-	}
-
-	fileName, ok := asset["name"].(string)
-	if !ok {
-		log.Error("Failed to get the name of the asset")
-		c.String(http.StatusInternalServerError, "Failed to get the name of the asset")
-		return
-	}
-
+	originalDocURL, _ := asset["originalDocURL"].(string)
+	fileName, _ := asset["name"].(string)
 	status := asset["status"].(float64)
 	originalHash := asset["originalHash"].(string)
-
-	if status == 1 {
-		log.Error("Document is not available for signatures")
-		c.String(http.StatusInternalServerError, "Document is not available for signatures")
-		return
-	}
-
-	if status != 0 {
-		log.Error("Document with status waiting can be signed only")
-		c.String(http.StatusInternalServerError, "Document with status waiting can be signed only")
-		return
-	}
+	requiredSignatures, _ := asset["requiredSignatures"].([]interface{})
+	successfulSignatures, _ := asset["successfulSignatures"].([]interface{})
+	rejectedSignatures := asset["rejectedSignatures"].([]interface{})
+	ownerMap, _ := asset["owner"].(map[string]interface{})
+	ownerKey, _ := ownerMap["@key"].(string)
+	owner := chaincode.Signer{Key: ownerKey}
+	username := form.Username
 
 	finalDocURL, ok := asset["finalDocURL"].(string)
 	if ok {
 		retrieveOriginalDocURL = false
 	}
 
-	username := form.Username
-
-	signerKey, err := chaincode.GetSignerKey(form.Cpf)
-	if err != nil {
-		log.Error("Failed to retrieve signer key", err)
-		c.String(http.StatusInternalServerError, "Failed to retrieve signer key: "+err.Error())
+	// Checking status before signing the doc
+	if status == 1 {
+		errorhandler.ReturnError(c, nil, "Document is not available for signatures", http.StatusInternalServerError)
+		return
+	} else if status == 2 {
+		errorhandler.ReturnError(c, nil, "Document is expired to be signed", http.StatusInternalServerError)
+		return
+	} else if status == 3 || status == 4 {
+		errorhandler.ReturnError(c, nil, "Document is already finalized for signatures", http.StatusInternalServerError)
 		return
 	}
 
-	requiredSignatures, _ := asset["requiredSignatures"].([]interface{})
-	successfulSignatures, _ := asset["successfulSignatures"].([]interface{})
-	rejectedSignatures := asset["rejectedSignatures"].([]interface{})
+	// Retrieving signer key and signer asset from blockchain
+	signerKey, err := chaincode.GetSignerKey(form.Cpf)
+	if err != nil {
+		errorhandler.ReturnError(c, err, "Failed to retrieve signer key", http.StatusInternalServerError)
+		return
+	}
 	ledgerKey := signerKey["@key"].(string)
 
 	_, err = chaincode.GetSigner(ledgerKey)
 	if err != nil {
-		log.Error("Failed to retrieve signer asset", err)
-		c.String(http.StatusInternalServerError, "Failed to retrieve signer asset: "+err.Error())
+		errorhandler.ReturnError(c, err, "Failed to retrieve signer asset", http.StatusInternalServerError)
 		return
 	}
 
+	// Checking Signer eligible to sign the document
 	signerAllowed := false
 	for _, reqSigner := range requiredSignatures {
-		reqSignerMap, ok := reqSigner.(map[string]interface{})
-		if !ok {
-			log.Error("Invalid required signer type")
-			c.String(http.StatusInternalServerError, "Invalid required signer type")
-			return
-		}
+		reqSignerMap, _ := reqSigner.(map[string]interface{})
 		if reqSignerMap["@key"] == ledgerKey {
 			signerAllowed = true
 			break
@@ -123,33 +109,58 @@ func SignDocument(c *gin.Context) {
 	}
 
 	if !signerAllowed {
-		log.Error("Signer not allowed to sign the document")
-		c.String(http.StatusForbidden, "Signer not allowed to sign the document")
+		errorhandler.ReturnError(c, err, "Signer not allowed to sign the document", http.StatusForbidden)
 		return
 	}
 
+	//Check if signer already signed the document
 	for _, sig := range successfulSignatures {
-		signerMap, ok := sig.(map[string]interface{})
-		if !ok {
-			log.Error("Invalid signer type")
-			c.String(http.StatusInternalServerError, "Invalid signer type")
-			return
-		}
-		key, ok := signerMap["@key"].(string)
-		if !ok {
-			log.Error("Invalid signer key type")
-			c.String(http.StatusInternalServerError, "Invalid signer key type")
-			return
-		}
+		signerMap, _ := sig.(map[string]interface{})
+		key, _ := signerMap["@key"].(string)
 		if key == ledgerKey {
-			log.Error("Document already signed by the signer")
-			c.String(http.StatusForbidden, "Document already signed by the signer")
+			errorhandler.ReturnError(c, err, "Document already signed by the signer", http.StatusForbidden)
 			return
 		}
+	}
+
+	// if Signer reject to sign the document
+	if !SignDocument {
+
+		requiredSigners := convertToSigners(requiredSignatures)
+		successfulSigners := convertToSigners(successfulSignatures)
+		rejectedSigners := convertToSigners(rejectedSignatures)
+		rejectedSigners = append(rejectedSigners, chaincode.Signer{Key: ledgerKey})
+
+		if len(successfulSigners)+len(rejectedSigners) == len(requiredSigners) {
+			status = 4
+		} else {
+			status = 0
+		}
+
+		rejectedDoc, err := chaincode.UploadDocumentTransaction(chaincode.FileAsset{
+			OriginalHash:         originalHash,
+			Status:               int(status),
+			RequiredSignatures:   requiredSigners,
+			OriginalDocURL:       originalDocURL,
+			Name:                 fileName,
+			RejectedSignatures:   rejectedSigners,
+			SuccessfulSignatures: successfulSigners,
+			FinalHash:            asset["finalHash"].(string),
+			FinalDocURL:          finalDocURL,
+			Owner:                owner,
+		})
+		if err != nil {
+			errorhandler.ReturnError(c, err, "failed to save document to ledger:", http.StatusInternalServerError)
+			c.Abort()
+			return
+		}
+		c.JSON(http.StatusOK, rejectedDoc)
+		return
 	}
 
 	bucketName := os.Getenv("S3_BUCKET_NAME")
 
+	// Validate which docurl should be used to retrieve the doc from s3
 	var s3FilePath string
 	if retrieveOriginalDocURL {
 		s3FilePath = strings.TrimPrefix(originalDocURL, fmt.Sprintf("s3://%s/", bucketName))
@@ -157,13 +168,15 @@ func SignDocument(c *gin.Context) {
 		s3FilePath = strings.TrimPrefix(finalDocURL, fmt.Sprintf("s3://%s/", bucketName))
 	}
 
+	//  Retrieve document from s3
 	docBytes, err := utils.DownloadFileFromS3(c.Request.Context(), s3FilePath)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Failed to download document: "+err.Error())
 		return
 	}
-	certKey := fmt.Sprintf("certificates/%s_cert.pfx", username)
 
+	//Retrive certificate from from s3
+	certKey := fmt.Sprintf("certificates/%s_cert.pfx", username)
 	certBytes, err := utils.DownloadFileFromS3(c.Request.Context(), certKey)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Failed to download certificate: "+err.Error())
@@ -183,49 +196,47 @@ func SignDocument(c *gin.Context) {
 
 	fileWriter, err := bodyWriter.CreateFormFile("file", fileName)
 	if err != nil {
-		log.Error("Failed to create form file for document", err)
-		c.String(http.StatusInternalServerError, "Failed to create form file for document: "+err.Error())
+		errorhandler.ReturnError(c, err, "Failed to create form file for document", http.StatusInternalServerError)
 		return
 	}
 	fileWriter.Write(docBytes)
 
 	certWriter, err := bodyWriter.CreateFormFile("certificate", fmt.Sprintf("%s_cert.pfx", username))
 	if err != nil {
-		log.Error("Failed to create form file for certificate", err)
-		c.String(http.StatusInternalServerError, "Failed to create form file for certificate: "+err.Error())
+		errorhandler.ReturnError(c, err, "Failed to create form file for certificate", http.StatusInternalServerError)
 		return
 	}
 	certWriter.Write(certBytes)
 
 	contentType := bodyWriter.FormDataContentType()
 	bodyWriter.Close()
+
+	// Signing the document and reading the response
 	response, err := client.Post(url, contentType, bodyBuf)
 	if err != nil {
-		log.Error("Could not sign document due to error", err)
-		c.String(http.StatusInternalServerError, "Could not connect to the signing service: "+err.Error())
+		errorhandler.ReturnError(c, err, "Could not sign document due to error", http.StatusInternalServerError)
 		return
 	}
 	defer response.Body.Close()
 
 	resBody, err := io.ReadAll(response.Body)
 	if err != nil {
-		log.Error("Unable to read response", err)
-		c.String(http.StatusInternalServerError, "Unable to read response from signing service: "+err.Error())
+		errorhandler.ReturnError(c, err, "Unable to read response from signing service", http.StatusInternalServerError)
 		return
 	}
 
 	var res signResponse
 	if err := json.Unmarshal(resBody, &res); err != nil {
-		log.Error("Could not unmarshal response body", err)
-		c.String(http.StatusInternalServerError, "Could not parse response from signing service: "+err.Error())
+		errorhandler.ReturnError(c, err, "Could not parse response from signing service:", http.StatusInternalServerError)
 		return
 	}
 
 	if res.Error != "" {
-		log.Error(res.Error)
-		c.String(http.StatusInternalServerError, "Failed to sign document: "+res.Error)
+		errorhandler.ReturnError(c, err, res.Error, http.StatusInternalServerError)
 		return
 	}
+
+	// Organizing the finalDocurl and saving it in the s3
 	var finalHashName string
 	signedDocHash := fmt.Sprintf("%x", sha256.Sum256(res.File))
 
@@ -236,76 +247,35 @@ func SignDocument(c *gin.Context) {
 
 	signedDocUrl, err := utils.UploadSignedDocToS3(res.File, finalHashName)
 	if err != nil {
-		log.Error("Failed to upload file to S3", err)
-		c.String(http.StatusInternalServerError, "Failed to upload document to S3: "+err.Error())
+		errorhandler.ReturnError(c, err, "Failed to upload document to S3:", http.StatusInternalServerError)
 		return
 	}
 
-	var updatedSuccessfulSignatures []interface{}
-	for _, sig := range successfulSignatures {
-		signerMap, ok := sig.(map[string]interface{})
-		if !ok {
-			log.Error("Invalid signer type")
-			c.String(http.StatusInternalServerError, "Invalid signer type")
-			return
-		}
-		key, ok := signerMap["@key"].(string)
-		if !ok {
-			log.Error("Invalid signer key type")
-			c.String(http.StatusInternalServerError, "Invalid signer key type")
-			return
-		}
-		updatedSuccessfulSignatures = append(updatedSuccessfulSignatures, key)
-	}
+	//Organizing updateSignature, rejectedSignatures and requiredSignatures
+	updatedSuccessfulSignatures := convertToSigners(successfulSignatures)
 
 	// Append ledgerKey to updatedSuccessfulSignatures
-	updatedSuccessfulSignatures = append(updatedSuccessfulSignatures, ledgerKey)
+	updatedSuccessfulSignatures = append(updatedSuccessfulSignatures, chaincode.Signer{Key: ledgerKey})
 
-	var requiredSigners []chaincode.Signer
-	for _, sig := range requiredSignatures {
-		signerMap, ok := sig.(map[string]interface{})
-		if !ok {
-			log.Error("Invalid signer type")
-			c.String(http.StatusInternalServerError, "Invalid signer type")
-			return
-		}
-		key, ok := signerMap["@key"].(string)
-		if !ok {
-			log.Error("Invalid signer key type")
-			c.String(http.StatusInternalServerError, "Invalid signer key type")
-			return
-		}
-		requiredSigners = append(requiredSigners, chaincode.Signer{Key: key})
-	}
+	requiredSigners := convertToSigners(requiredSignatures)
 
 	var successfulSigners []chaincode.Signer
 	for _, sig := range updatedSuccessfulSignatures {
-		key, ok := sig.(string)
-		if !ok {
-			log.Error("Invalid signer key type")
-			c.String(http.StatusInternalServerError, "Invalid signer key type")
-			return
-		}
+		key := sig.Key
 		successfulSigners = append(successfulSigners, chaincode.Signer{Key: key})
 	}
 
-	var rejectedSigners []chaincode.Signer
-	for _, sig := range rejectedSignatures {
-		signerMap, ok := sig.(map[string]interface{})
-		if !ok {
-			log.Error("Invalid signer type")
-			c.String(http.StatusInternalServerError, "Invalid signer type")
-			return
-		}
-		key, ok := signerMap["@key"].(string)
-		if !ok {
-			log.Error("Invalid signer key type")
-			c.String(http.StatusInternalServerError, "Invalid signer key type")
-			return
-		}
-		rejectedSigners = append(rejectedSigners, chaincode.Signer{Key: key})
+	rejectedSigners := convertToSigners(rejectedSignatures)
+
+	if len(successfulSigners) == len(requiredSigners) {
+		status = 3
+	} else if len(successfulSigners)+len(rejectedSigners) == len(requiredSigners) {
+		status = 4
+	} else {
+		status = 0
 	}
 
+	// Updating doc asset state
 	_, err = chaincode.UploadDocumentTransaction(chaincode.FileAsset{
 		OriginalHash:         originalHash,
 		Status:               int(status),
@@ -316,13 +286,23 @@ func SignDocument(c *gin.Context) {
 		SuccessfulSignatures: successfulSigners,
 		FinalHash:            signedDocHash,
 		FinalDocURL:          signedDocUrl,
+		Owner:                owner,
 	})
 	if err != nil {
-		logger.Error(err)
-		c.String(http.StatusInternalServerError, "failed to save document to ledger: "+err.Error())
+		errorhandler.ReturnError(c, err, "failed to save document to ledger:", http.StatusInternalServerError)
 		c.Abort()
 		return
 	}
 
 	c.JSON(http.StatusOK, res)
+}
+
+func convertToSigners(signatures []interface{}) []chaincode.Signer {
+	var signers []chaincode.Signer
+	for _, sig := range signatures {
+		signerMap, _ := sig.(map[string]interface{})
+		key, _ := signerMap["@key"].(string)
+		signers = append(signers, chaincode.Signer{Key: key})
+	}
+	return signers
 }
