@@ -12,6 +12,7 @@ type FileAsset struct {
 	FinalDocURL          string    `json:"finalDocURL"`
 	Name                 string    `json:"name"`
 	Signature            Signature `json:"signature"`
+	Owner                Signer    `json:"owner"`
 }
 
 type Signer struct {

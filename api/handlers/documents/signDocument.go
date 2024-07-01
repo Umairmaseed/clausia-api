@@ -70,6 +70,12 @@ func SignDocument(c *gin.Context) {
 	status := asset["status"].(float64)
 	originalHash := asset["originalHash"].(string)
 
+	if status == 1 {
+		log.Error("Document is not available for signatures")
+		c.String(http.StatusInternalServerError, "Document is not available for signatures")
+		return
+	}
+
 	if status != 0 {
 		log.Error("Document with status waiting can be signed only")
 		c.String(http.StatusInternalServerError, "Document with status waiting can be signed only")
