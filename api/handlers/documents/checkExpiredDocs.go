@@ -1,8 +1,6 @@
 package documents
 
 import (
-	"encoding/json"
-
 	"github.com/goledgerdev/goprocess-api/chaincode"
 	"github.com/google/logger"
 )
@@ -15,21 +13,16 @@ func CheckExpiredDocs() {
 
 	for _, docMap := range expiredDocs {
 		if status, ok := docMap["status"].(float64); ok && status == 0 {
+			key := docMap["@key"].(string)
 			docMap["status"] = 2
 
-			docJSON, err := json.Marshal(docMap)
-			if err != nil {
-				logger.Error("Failed to marshal document: ", err)
-				continue
-			}
+			logger.Infof(key)
 
-			var fileAsset chaincode.FileAsset
-			err = json.Unmarshal(docJSON, &fileAsset)
-			if err != nil {
-				logger.Error("Failed to unmarshal document: ", err)
-				continue
+			documentMAp := map[string]interface{}{
+				"@assetType": "document",
+				"@key":       key,
 			}
-			_, err = chaincode.UploadDocumentTransaction(fileAsset)
+			_, err = chaincode.UpdateDocument(documentMAp, docMap)
 			if err != nil {
 				logger.Error(err)
 			}
