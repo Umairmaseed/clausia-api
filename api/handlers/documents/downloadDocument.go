@@ -53,7 +53,6 @@ func DownloadDocument(c *gin.Context) {
 		return
 	}
 
-	// Assuming the first result is the desired document
 	document := resultArray[0].(map[string]interface{})
 	name := document["name"].(string)
 	url := ""

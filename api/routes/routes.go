@@ -46,6 +46,7 @@ func AddRoutesToEngine(r *gin.Engine) {
 	r.POST("/confirmnewemail", a.ConfirmNewEmail)
 	r.GET("/listdocuments", documents.ListUserDocs)
 	r.GET("/downloaddocument", documents.DownloadDocument)
+	r.GET("/expectedsignatures", documents.ExpectedUserSignatures)
 
 	// serve swagger files
 	docs.SwaggerInfo.BasePath = "/api"
