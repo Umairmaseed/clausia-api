@@ -52,13 +52,13 @@ func ListUserDocs(c *gin.Context) {
 		queryMap["status"] = statusFloat
 	}
 
-	signerAsset, err := chaincode.SearchAsset(queryMap)
+	docAsset, err := chaincode.SearchAsset(queryMap)
 	if err != nil {
 		errorhandler.ReturnError(c, err, "Failed to search for documents", http.StatusInternalServerError)
 		return
 	}
 
-	resultArray, ok := signerAsset["result"].([]interface{})
+	resultArray, ok := docAsset["result"].([]interface{})
 	if !ok || len(resultArray) == 0 {
 		errorhandler.ReturnError(c, fmt.Errorf("No documents found"), "No documents found", http.StatusNotFound)
 		return
