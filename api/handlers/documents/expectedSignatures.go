@@ -20,6 +20,11 @@ func ExpectedUserSignatures(c *gin.Context) {
 
 	var form expectedUserform
 
+	if err := c.ShouldBind(&form); err != nil {
+		errorhandler.ReturnError(c, err, "Failed to bind form data", http.StatusBadRequest)
+		return
+	}
+
 	email := c.Request.Header.Get("Email")
 	if email == "" {
 		logger.Error("Email not found in headers")
