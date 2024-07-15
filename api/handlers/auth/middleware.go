@@ -99,6 +99,7 @@ func (a *Auth) AuthMiddleware() gin.HandlerFunc {
 		// Add headers
 		username := claims.Username
 		c.Writer.Header().Set("Username", username)
+		c.Request.Header.Add("Username", username)
 		c.Request.Header.Add("UserId", claims.Subject)
 		c.Request.Header.Add("email", claims.Email)
 		c.Request.Header.Add("emailverified", fmt.Sprintf("%t", claims.EmailVerified))
