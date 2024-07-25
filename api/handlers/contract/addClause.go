@@ -43,7 +43,7 @@ func AddClause(c *gin.Context) {
 		return
 	}
 
-	contractAsset, err := chaincode.CreateAutoExecutableContract(form.AutoExecutableContract)
+	contractAsset, err := chaincode.SearchAsset(form.AutoExecutableContract)
 	if err != nil {
 		errorhandler.ReturnError(c, err, "Failed to find contract asset", http.StatusInternalServerError)
 		return
