@@ -49,7 +49,23 @@ func AddClause(c *gin.Context) {
 		return
 	}
 
-	contractOwner := contractAsset["owner"].(map[string]interface{})
+	results, ok := contractAsset["result"].([]interface{})
+	if !ok || len(results) == 0 {
+		errorhandler.ReturnError(c, fmt.Errorf("no results found in contract asset"), "no results found in contract asset", http.StatusInternalServerError)
+		return
+	}
+
+	firstResult, ok := results[0].(map[string]interface{})
+	if !ok {
+		errorhandler.ReturnError(c, fmt.Errorf("invalid result format"), "invalid result format", http.StatusInternalServerError)
+		return
+	}
+
+	contractOwner, ok := firstResult["owner"].(map[string]interface{})
+	if !ok {
+		errorhandler.ReturnError(c, fmt.Errorf("could not find owner of th contract"), "could not find owner of th contract", http.StatusInternalServerError)
+		return
+	}
 
 	if contractOwner["@key"] != signerKey {
 		errorhandler.ReturnError(c, fmt.Errorf("only the owner of the contract can add the clause"), "only the owner of the contract can add the clause", http.StatusBadRequest)

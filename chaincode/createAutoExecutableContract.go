@@ -29,7 +29,7 @@ func CreateAutoExecutableContract(reqMap map[string]interface{}) (map[string]int
 
 	if res.StatusCode != http.StatusOK {
 		fmt.Println("res: ", res)
-		return nil, fmt.Errorf("failed to change the status of the document to cancel")
+		return nil, fmt.Errorf("failed to create a auto executable contract")
 	}
 
 	responseBody, err := io.ReadAll(res.Body)
