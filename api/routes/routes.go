@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/goledgerdev/goprocess-api/api/handlers/auth"
+	"github.com/goledgerdev/goprocess-api/api/handlers/contract"
 	"github.com/goledgerdev/goprocess-api/api/handlers/documents"
 	"github.com/goledgerdev/goprocess-api/api/routes/docs"
 
@@ -48,6 +49,8 @@ func AddRoutesToEngine(r *gin.Engine) {
 	r.GET("/downloaddocument", documents.DownloadDocument)
 	r.GET("/expectedsignatures", documents.ExpectedUserSignatures)
 	r.GET("/getdocument", documents.GetDoc)
+
+	r.POST("/createcontract", contract.CreateContract)
 
 	// serve swagger files
 	docs.SwaggerInfo.BasePath = "/api"
