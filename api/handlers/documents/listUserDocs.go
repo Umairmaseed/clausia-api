@@ -38,7 +38,7 @@ func ListUserDocs(c *gin.Context) {
 	queryMap := map[string]interface{}{
 		"@assetType": "document",
 		"owner": map[string]interface{}{
-			"@assetType": "signer",
+			"@assetType": "user",
 			"@key":       signerKey,
 		},
 	}

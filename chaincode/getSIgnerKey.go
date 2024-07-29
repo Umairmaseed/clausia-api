@@ -23,7 +23,7 @@ func GetSignerKey(cpf string) (map[string]interface{}, error) {
 
 	reqB64 := base64.StdEncoding.EncodeToString(request)
 
-	getSignerURL := os.Getenv("ORG_URL") + "/query/getSignerKey?@request=" + reqB64
+	getSignerURL := os.Getenv("ORG_URL") + "/query/getUserKey?@request=" + reqB64
 
 	res, err := http.Get(getSignerURL)
 	if err != nil {

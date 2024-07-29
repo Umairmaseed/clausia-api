@@ -40,7 +40,7 @@ func ExpectedUserSignatures(c *gin.Context) {
 	}
 
 	signer := map[string]interface{}{
-		"@assetType": "signer",
+		"@assetType": "user",
 		"@key":       signerKey,
 	}
 

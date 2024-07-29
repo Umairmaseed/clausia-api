@@ -39,7 +39,7 @@ func CreateContract(c *gin.Context) {
 	}
 
 	signerAsset := map[string]interface{}{
-		"@assetType": "signer",
+		"@assetType": "user",
 		"@key":       signerKey,
 	}
 

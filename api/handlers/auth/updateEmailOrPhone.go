@@ -89,7 +89,7 @@ func (a *Auth) UpdateEmailOrPhone(c *gin.Context) {
 	}
 
 	signerMap := map[string]interface{}{
-		"@assetType": "signer",
+		"@assetType": "user",
 		"@key":       signerKey,
 	}
 

@@ -36,7 +36,7 @@ func AddClause(c *gin.Context) {
 
 	signerKey, err := utils.SearchAndReturnSignerKey(email)
 	if err != nil {
-		errorhandler.ReturnError(c, err, "Failed to find signer key", http.StatusInternalServerError)
+		errorhandler.ReturnError(c, err, "Failed to find user key", http.StatusInternalServerError)
 		return
 	}
 

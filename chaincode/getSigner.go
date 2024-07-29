@@ -15,7 +15,7 @@ import (
 func GetSigner(key string) (map[string]interface{}, error) {
 	request, err := json.Marshal(map[string]interface{}{
 		"key": map[string]interface{}{
-			"@assetType": "signer",
+			"@assetType": "user",
 			"@key":       key,
 		},
 	})
