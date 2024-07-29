@@ -17,11 +17,8 @@ type addClauseForm struct {
 	Category               string                   `form:"category"`
 	Parameters             map[string]interface{}   `form:"parameters"`
 	Input                  map[string]interface{}   `form:"input"`
-	Executable             bool                     `form:"executable" binding:"required"`
 	Dependencies           []map[string]interface{} `form:"dependencies"`
 	ActionType             float64                  `form:"actionType" binding:"required"`
-	Finalized              bool                     `form:"finalized"`
-	Result                 map[string]interface{}   `form:"result"`
 }
 
 func AddClause(c *gin.Context) {
@@ -75,7 +72,6 @@ func AddClause(c *gin.Context) {
 	reqMap := map[string]interface{}{
 		"autoExecutableContract": form.AutoExecutableContract,
 		"id":                     form.Id,
-		"executable":             form.Executable,
 		"actionType":             form.ActionType,
 	}
 
@@ -93,12 +89,6 @@ func AddClause(c *gin.Context) {
 	}
 	if form.Dependencies != nil {
 		reqMap["dependencies"] = form.Dependencies
-	}
-	if form.Finalized {
-		reqMap["finalized"] = form.Finalized
-	}
-	if form.Result != nil {
-		reqMap["result"] = form.Result
 	}
 
 	updatedContractAsset, err := chaincode.AddClause(reqMap)
