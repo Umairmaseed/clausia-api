@@ -14,6 +14,7 @@ type createContractForm struct {
 	SignatureDate string                   `form:"signatureDate" binding:"required"`
 	Clauses       []map[string]interface{} `form:"clauses"`
 	Data          map[string]interface{}   `form:"data"`
+	Participants  []map[string]interface{} `form:"participants"`
 }
 
 func CreateContract(c *gin.Context) {
@@ -51,6 +52,9 @@ func CreateContract(c *gin.Context) {
 
 	if len(form.Clauses) > 0 {
 		req["clauses"] = form.Clauses
+	}
+	if len(form.Participants) > 0 {
+		req["participants"] = form.Participants
 	}
 	if form.Data != nil {
 		req["data"] = form.Data
