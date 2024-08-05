@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/goledgerdev/goprocess-api/api/handlers/contract"
 	"github.com/goledgerdev/goprocess-api/api/handlers/documents"
 	"github.com/goledgerdev/goprocess-api/api/server"
 )
@@ -51,7 +52,7 @@ func main() {
 		duration = 1 * time.Minute
 	}
 
-	// Start the routine to check for expired documents
+	// Start the routine to check for expired documents and contracts to be executed
 	go func() {
 		ticker := time.NewTicker(duration)
 		defer ticker.Stop()
@@ -59,6 +60,7 @@ func main() {
 			select {
 			case <-ticker.C:
 				documents.CheckExpiredDocs()
+				contract.ExecuteContract()
 			case <-ctx.Done():
 				return
 			}
