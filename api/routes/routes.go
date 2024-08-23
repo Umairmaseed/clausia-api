@@ -59,6 +59,7 @@ func AddRoutesToEngine(r *gin.Engine) {
 	r.POST("/addevaluatedate", contract.AddEvaluateDate)
 	r.POST("/addinputstocheckfine", contract.AddInputsToCheckFine)
 	r.POST("/addreviewtocontract", contract.AddReviewToContract)
+	r.POST("/addinputstomakepayment", contract.AddInputsToMakePayment)
 
 	// serve swagger files
 	docs.SwaggerInfo.BasePath = "/api"
