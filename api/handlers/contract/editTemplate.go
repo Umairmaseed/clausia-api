@@ -66,7 +66,7 @@ func EditTemplate(c *gin.Context) {
 	}
 
 	reqMap := map[string]interface{}{
-		"autoExecutableContract": form.Template,
+		"template": form.Template,
 	}
 
 	if form.Description != "" {
