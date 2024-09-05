@@ -64,9 +64,9 @@ func EditTemplateClause(c *gin.Context) {
 
 	updatedContractAsset, err := chaincode.EditTemplateClause(req)
 	if err != nil {
-		errorhandler.ReturnError(c, err, "Failed to add participants to contract", http.StatusInternalServerError)
+		errorhandler.ReturnError(c, err, "Failed to edit template clause", http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"contract": updatedContractAsset})
+	c.JSON(http.StatusOK, gin.H{"templateClause": updatedContractAsset})
 }

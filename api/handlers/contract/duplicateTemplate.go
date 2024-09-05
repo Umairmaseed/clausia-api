@@ -9,16 +9,14 @@ import (
 	"github.com/google/logger"
 )
 
-type createTemplateForm struct {
-	Id          string                   `form:"id" binding:"required"`
-	Name        string                   `form:"name" binding:"required"`
-	Description string                   `form:"description"`
-	Public      bool                     `form:"public" binding:"required"`
-	Clauses     []map[string]interface{} `form:"clauses"`
+type DuplicateTemplateForm struct {
+	Id       string                 `form:"id" binding:"required"`
+	Name     string                 `form:"name" binding:"required"`
+	Template map[string]interface{} `form:"Template" binding:"required"`
 }
 
-func CreateTemplate(c *gin.Context) {
-	var form createTemplateForm
+func DuplicateTemplate(c *gin.Context) {
+	var form DuplicateTemplateForm
 	if err := c.ShouldBind(&form); err != nil {
 		logger.Error("Failed to bind request form: ", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -45,20 +43,13 @@ func CreateTemplate(c *gin.Context) {
 	}
 
 	req := map[string]interface{}{
-		"name":    form.Name,
-		"creator": userAsset,
-		"public":  form.Public,
-		"id":      form.Id,
+		"name":     form.Name,
+		"creator":  userAsset,
+		"id":       form.Id,
+		"template": form.Template,
 	}
 
-	if len(form.Clauses) > 0 {
-		req["clauses"] = form.Clauses
-	}
-	if form.Description != "" {
-		req["description"] = form.Description
-	}
-
-	contract, err := chaincode.CreateTemplate(req)
+	contract, err := chaincode.DuplicateTemplate(req)
 	if err != nil {
 		logger.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())

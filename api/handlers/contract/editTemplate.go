@@ -30,7 +30,7 @@ func EditTemplate(c *gin.Context) {
 		return
 	}
 
-	signerKey, err := utils.SearchAndReturnSignerKey(email)
+	userKey, err := utils.SearchAndReturnSignerKey(email)
 	if err != nil {
 		errorhandler.ReturnError(c, err, "Failed to find user key", http.StatusInternalServerError)
 		return
@@ -60,7 +60,7 @@ func EditTemplate(c *gin.Context) {
 		return
 	}
 
-	if contractOwner["@key"] != signerKey {
+	if contractOwner["@key"] != userKey {
 		errorhandler.ReturnError(c, fmt.Errorf("only the creator of the template can edit"), "only the creator of the template can edit", http.StatusBadRequest)
 		return
 	}
@@ -81,9 +81,9 @@ func EditTemplate(c *gin.Context) {
 	}
 	updatedContractAsset, err := chaincode.EditTemplate(reqMap)
 	if err != nil {
-		errorhandler.ReturnError(c, err, "Failed to add participants to contract", http.StatusInternalServerError)
+		errorhandler.ReturnError(c, err, "Failed to edit template", http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"contract": updatedContractAsset})
+	c.JSON(http.StatusOK, gin.H{"template": updatedContractAsset})
 }

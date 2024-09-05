@@ -65,6 +65,7 @@ func AddRoutesToEngine(r *gin.Engine) {
 	r.POST("/createtemplateclause", contract.CreateTemplateClause)
 	r.POST("/edittemplate", contract.EditTemplate)
 	r.POST("/edittemplateclause", contract.EditTemplateClause)
+	r.POST("/duplicatetemplate", contract.DuplicateTemplate)
 
 	// serve swagger files
 	docs.SwaggerInfo.BasePath = "/api"
