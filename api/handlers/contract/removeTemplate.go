@@ -9,7 +9,7 @@ import (
 )
 
 type RemoveTemplateForm struct {
-	Template map[string]interface{} `form:"Template" binding:"required"`
+	Template map[string]interface{} `form:"template" binding:"required"`
 }
 
 func RemoveTemplate(c *gin.Context) {
@@ -31,6 +31,6 @@ func RemoveTemplate(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"template": contract, "message": "template remove successfully"})
+	c.JSON(http.StatusOK, gin.H{"template": contract, "message": "template removed successfully"})
 
 }
