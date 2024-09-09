@@ -18,6 +18,7 @@ type EditTemplateClauseForm struct {
 	Dependencies      []map[string]interface{} `form:"dependencies"`
 	DefaultInputs     map[string]interface{}   `form:"defaultInputs"`
 	DefaultParameters map[string]interface{}   `form:"defaultParameters"`
+	Optional          *bool                    `form:"optional"`
 }
 
 func EditTemplateClause(c *gin.Context) {
@@ -60,6 +61,9 @@ func EditTemplateClause(c *gin.Context) {
 	}
 	if form.DefaultParameters != nil {
 		req["defaultParameters"] = form.DefaultParameters
+	}
+	if form.Optional != nil {
+		req["optional"] = *form.Optional
 	}
 
 	updatedContractAsset, err := chaincode.EditTemplateClause(req)

@@ -19,6 +19,7 @@ type createTemplateClauseForm struct {
 	Dependencies      []map[string]interface{} `form:"dependencies"`
 	DefaultInputs     map[string]interface{}   `form:"defaultInputs"`
 	DefaultParameters map[string]interface{}   `form:"defaultParameters"`
+	Optional          *bool                    `form:"optional"`
 }
 
 func CreateTemplateClause(c *gin.Context) {
@@ -51,6 +52,9 @@ func CreateTemplateClause(c *gin.Context) {
 	}
 	if form.DefaultParameters != nil {
 		req["defaultParameters"] = form.DefaultParameters
+	}
+	if form.Optional != nil {
+		req["optional"] = *form.Optional
 	}
 
 	contract, err := chaincode.CreateTemplateClause(req)
