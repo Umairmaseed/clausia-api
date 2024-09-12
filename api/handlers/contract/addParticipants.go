@@ -3,13 +3,15 @@ package contract
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
 	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
 	"github.com/goledgerdev/goprocess-api/chaincode"
 	"github.com/goledgerdev/goprocess-api/utils"
 )
+
+var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
 func AddParticipants(c *gin.Context) {
 	tokenString := c.Query("token")
@@ -18,7 +20,7 @@ func AddParticipants(c *gin.Context) {
 		return
 	}
 
-	claims, err := verifyInviteToken(tokenString)
+	claims, err := utils.VerifyInviteToken(tokenString, jwtSecret)
 	if err != nil {
 		errorhandler.ReturnError(c, err, "Invalid or expired token", http.StatusUnauthorized)
 		return
@@ -75,22 +77,4 @@ func AddParticipants(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"contract": updatedContractAsset})
-}
-
-func verifyInviteToken(tokenString string) (*InviteClaims, error) {
-	claims := &InviteClaims{}
-
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return jwtSecret, nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	if !token.Valid {
-		return nil, fmt.Errorf("invalid token")
-	}
-
-	return claims, nil
 }
