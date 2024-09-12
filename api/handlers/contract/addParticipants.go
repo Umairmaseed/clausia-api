@@ -5,36 +5,40 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
 	"github.com/goledgerdev/goprocess-api/chaincode"
 	"github.com/goledgerdev/goprocess-api/utils"
 )
 
-type addParticipantsForm struct {
-	AutoExecutableContract map[string]interface{}   `form:"autoExecutableContract" binding:"required"`
-	Participants           []map[string]interface{} `form:"participants" binding:"required"`
-}
-
 func AddParticipants(c *gin.Context) {
-	var form addParticipantsForm
-	if err := c.ShouldBind(&form); err != nil {
-		errorhandler.ReturnError(c, err, "Failed to bind request form: ", http.StatusBadRequest)
+	tokenString := c.Query("token")
+	if tokenString == "" {
+		errorhandler.ReturnError(c, fmt.Errorf("token is required"), "Token is required", http.StatusBadRequest)
 		return
 	}
 
-	email := c.Request.Header.Get("Email")
-	if email == "" {
-		errorhandler.ReturnError(c, fmt.Errorf("email not found in headers"), "email not found in headers", http.StatusBadRequest)
+	claims, err := verifyInviteToken(tokenString)
+	if err != nil {
+		errorhandler.ReturnError(c, err, "Invalid or expired token", http.StatusUnauthorized)
 		return
 	}
 
-	signerKey, err := utils.SearchAndReturnSignerKey(email)
+	participantEmail := claims.Email
+	contractID := claims.ContractID
+
+	autoExecutableContract := map[string]interface{}{
+		"@key":       contractID,
+		"@assetType": "autoExecutableContract",
+	}
+
+	participantKey, err := utils.SearchAndReturnSignerKey(participantEmail)
 	if err != nil {
 		errorhandler.ReturnError(c, err, "Failed to find user key", http.StatusInternalServerError)
 		return
 	}
 
-	contractAsset, err := chaincode.SearchAsset(form.AutoExecutableContract)
+	contractAsset, err := chaincode.SearchAsset(autoExecutableContract)
 	if err != nil {
 		errorhandler.ReturnError(c, err, "Failed to find contract asset", http.StatusInternalServerError)
 		return
@@ -52,20 +56,16 @@ func AddParticipants(c *gin.Context) {
 		return
 	}
 
-	contractOwner, ok := firstResult["owner"].(map[string]interface{})
-	if !ok {
-		errorhandler.ReturnError(c, fmt.Errorf("could not find owner of the contract"), "could not find owner of the contract", http.StatusInternalServerError)
-		return
-	}
-
-	if contractOwner["@key"] != signerKey {
-		errorhandler.ReturnError(c, fmt.Errorf("only the owner of the contract can add participants"), "only the owner of the contract can add participants", http.StatusBadRequest)
-		return
+	participants := []map[string]interface{}{
+		{
+			"@key":       participantKey,
+			"@assetType": "user",
+		},
 	}
 
 	reqMap := map[string]interface{}{
-		"autoExecutableContract": form.AutoExecutableContract,
-		"participants":           form.Participants,
+		"autoExecutableContract": firstResult,
+		"participants":           participants,
 	}
 
 	updatedContractAsset, err := chaincode.AddParticipants(reqMap)
@@ -75,4 +75,22 @@ func AddParticipants(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"contract": updatedContractAsset})
+}
+
+func verifyInviteToken(tokenString string) (*InviteClaims, error) {
+	claims := &InviteClaims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return jwtSecret, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !token.Valid {
+		return nil, fmt.Errorf("invalid token")
+	}
+
+	return claims, nil
 }
