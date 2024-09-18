@@ -1,0 +1,39 @@
+version: "3.7"
+
+networks:
+  goprocess-cc-net:
+    external: true
+
+services:
+  goprocess-db:
+    image: mongo:6.0-focal
+    container_name: goprocess-db
+    hostname: goprocess-db
+    command: | 
+      sh -c "openssl rand -base64 756 > /mongorepl.key &&
+        chmod 400 /mongorepl.key &&
+        chown 999 /mongorepl.key &&
+        /usr/local/bin/docker-entrypoint.sh --replSet gprs --bind_ip_all --keyFile /mongorepl.key"
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: a3VvZ3V2d29uNmd0cG9zdkd5amk4c3B3dG5vV3J0S3c5U2FsY0Q3Y2c=
+    volumes:
+      - ./config/db-rs-init.sh:/scripts/rs-init.sh
+    networks:
+      - goprocess-cc-net
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express-goprocess
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: a3VvZ3V2d29uNmd0cG9zdkd5amk4c3B3dG5vV3J0S3c5U2FsY0Q3Y2c=
+      ME_CONFIG_MONGODB_URL: mongodb://root:a3VvZ3V2d29uNmd0cG9zdkd5amk4c3B3dG5vV3J0S3c5U2FsY0Q3Y2c=@goprocess-db:27017/?authSource=admin
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: adminpw
+    ports:
+      - 8081:8081
+    networks:
+      - goprocess-cc-net

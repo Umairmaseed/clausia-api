@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"os"
 	"os/signal"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/goledgerdev/goprocess-api/api/handlers/contract"
 	"github.com/goledgerdev/goprocess-api/api/handlers/documents"
 	"github.com/goledgerdev/goprocess-api/api/server"
+	"github.com/goledgerdev/goprocess-api/db"
 )
 
 func main() {
@@ -71,6 +73,12 @@ func main() {
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
+
+	mongo := db.GetDB()
+	if mongo == nil {
+		log.Fatal("Could not init database")
+		return
+	}
 
 	<-quit
 	cancel()
