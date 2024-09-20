@@ -14,6 +14,7 @@ import (
 	"github.com/goledgerdev/goprocess-api/api/routes"
 	"github.com/goledgerdev/goprocess-api/certs"
 	"github.com/goledgerdev/goprocess-api/env"
+	"github.com/goledgerdev/goprocess-api/websocket"
 )
 
 func defaultServer(r *gin.Engine, port string) *http.Server {
@@ -25,9 +26,12 @@ func defaultServer(r *gin.Engine, port string) *http.Server {
 
 // Serve starts the server with gin's default engine.
 // Server gracefully shut's down
-func Serve(r *gin.Engine, ctx context.Context) {
+func Serve(r *gin.Engine, ctx context.Context, wsServer *websocket.WebSocketServer) {
+	// Initialize and start WebSocket server
+	go wsServer.Run()
+
 	// Register routes and handlers
-	routes.AddRoutesToEngine(r)
+	routes.AddRoutesToEngine(r, wsServer)
 
 	// Get port
 	var port string
@@ -69,10 +73,14 @@ func Serve(r *gin.Engine, ctx context.Context) {
 // When server starts, the wait group counter is increased and processes
 // that depend on server can be ran synchronously with it
 func ServeSync(ctx context.Context, wg *sync.WaitGroup) {
+	// Initialize and start WebSocket server
+	wsServer := websocket.NewWebSocketServer()
+	go wsServer.Run()
+
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
 
-	routes.AddRoutesToEngine(r)
+	routes.AddRoutesToEngine(r, wsServer)
 
 	srv := defaultServer(r, "8080")
 

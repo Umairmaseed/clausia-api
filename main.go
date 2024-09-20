@@ -13,6 +13,7 @@ import (
 	"github.com/goledgerdev/goprocess-api/api/handlers/documents"
 	"github.com/goledgerdev/goprocess-api/api/server"
 	"github.com/goledgerdev/goprocess-api/db"
+	"github.com/goledgerdev/goprocess-api/websocket"
 )
 
 func main() {
@@ -69,16 +70,22 @@ func main() {
 		}
 	}()
 
-	go server.Serve(r, ctx)
+	// Initialize and start WebSocket server
+	wsServer := websocket.NewWebSocketServer()
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
+	go server.Serve(r, ctx, wsServer)
 
 	mongo := db.GetDB()
 	if mongo == nil {
 		log.Fatal("Could not init database")
 		return
 	}
+
+	// Watch for changes in MongoDB and notify users via WebSockets
+	db.WatchForNotifications(mongo, wsServer, ctx)
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
 
 	<-quit
 	cancel()

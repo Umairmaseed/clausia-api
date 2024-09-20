@@ -19,7 +19,7 @@ var (
 )
 
 type DB struct {
-	client *mongo.Client
+	Client *mongo.Client
 }
 
 // GetDB returns a singleton instance of GMongo client to perform actions in Mongo
@@ -54,16 +54,16 @@ func GetDB() *DB {
 		}
 
 		database = &DB{
-			client: client,
+			Client: client,
 		}
 	})
 	return database
 }
 
 func (db *DB) StartSession() (mongo.Session, error) {
-	return db.database().Client().StartSession()
+	return db.Database().Client().StartSession()
 }
 
-func (db *DB) database() *mongo.Database {
-	return db.client.Database(os.Getenv(env.DATABASE_NAME))
+func (db *DB) Database() *mongo.Database {
+	return db.Client.Database(os.Getenv(env.DATABASE_NAME))
 }

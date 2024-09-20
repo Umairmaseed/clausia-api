@@ -9,13 +9,14 @@ import (
 	"github.com/goledgerdev/goprocess-api/api/handlers/contract"
 	"github.com/goledgerdev/goprocess-api/api/handlers/documents"
 	"github.com/goledgerdev/goprocess-api/api/routes/docs"
+	"github.com/goledgerdev/goprocess-api/websocket"
 
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // Register routes and handlers used by engine
-func AddRoutesToEngine(r *gin.Engine) {
+func AddRoutesToEngine(r *gin.Engine, wsServer *websocket.WebSocketServer) {
 
 	a := auth.NewAuth()
 
@@ -78,4 +79,10 @@ func AddRoutesToEngine(r *gin.Engine) {
 
 	url := ginSwagger.URL("/swagger.yaml")
 	r.GET("/api-docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler, url))
+
+	// WebSocket route
+	r.GET("/ws", func(c *gin.Context) {
+		// Convert the Gin context to the http.ResponseWriter and *http.Request
+		http.HandlerFunc(websocket.WebSocketHandler(wsServer)).ServeHTTP(c.Writer, c.Request)
+	})
 }

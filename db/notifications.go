@@ -2,8 +2,11 @@ package db
 
 import (
 	"context"
+	"encoding/json"
+	"log"
 	"time"
 
+	"github.com/goledgerdev/goprocess-api/websocket"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -94,4 +97,54 @@ func (s *NotificationService) GetNotificationsByType(ctx context.Context, userID
 		return nil, err
 	}
 	return notifications, nil
+}
+
+func WatchForNotifications(mongodb *DB, server *websocket.WebSocketServer, ctx context.Context) {
+	collection := mongodb.Database().Collection(notificationsCollection)
+
+	changeStream, err := collection.Watch(ctx, mongo.Pipeline{})
+	if err != nil {
+		log.Fatalf("Error setting up change stream: %v", err)
+	}
+	defer changeStream.Close(ctx)
+
+	for changeStream.Next(ctx) {
+		var changeDoc bson.M
+		if err := changeStream.Decode(&changeDoc); err != nil {
+			log.Printf("Error decoding change event: %v", err)
+			continue
+		}
+
+		fullDocument := changeDoc["fullDocument"].(bson.M)
+		notification := Notification{
+			ID:      fullDocument["_id"].(primitive.ObjectID),
+			UserID:  fullDocument["userId"].(string),
+			Type:    fullDocument["type"].(string),
+			Message: fullDocument["message"].(string),
+			Read:    fullDocument["read"].(bool),
+		}
+
+		if fullDocument["metadata"] != nil {
+			notification.Metadata = make(map[string]string)
+			for k, v := range fullDocument["metadata"].(bson.M) {
+				notification.Metadata[k] = v.(string)
+			}
+		}
+
+		NotifyUserOfChange(server, notification.UserID, notification)
+	}
+}
+
+func NotifyUserOfChange(server *websocket.WebSocketServer, userID string, notification Notification) {
+	notifData, err := json.Marshal(notification)
+	if err != nil {
+		log.Printf("Error marshalling notification data for user %s: %v", userID, err)
+		return
+	}
+
+	notificationMessage := websocket.NotificationMessage{
+		UserID:  userID,
+		Message: notifData,
+	}
+	server.Broadcast <- notificationMessage
 }
