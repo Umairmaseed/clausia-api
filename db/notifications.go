@@ -77,6 +77,14 @@ func (s *NotificationService) MarkNotificationAsRead(ctx context.Context, notifI
 	return err
 }
 
+func (s *NotificationService) MarkNotificationAsUnRead(ctx context.Context, notifID primitive.ObjectID) error {
+	filter := bson.M{"_id": notifID}
+	update := bson.M{"$set": bson.M{"read": false}}
+
+	_, err := s.collection.UpdateOne(ctx, filter, update)
+	return err
+}
+
 func (s *NotificationService) DeleteNotification(ctx context.Context, notifID primitive.ObjectID) error {
 	_, err := s.collection.DeleteOne(ctx, bson.M{"_id": notifID})
 	return err
