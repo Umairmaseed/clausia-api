@@ -8,7 +8,9 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
 	"github.com/goledgerdev/goprocess-api/chaincode"
+	"github.com/goledgerdev/goprocess-api/db"
 	"github.com/goledgerdev/goprocess-api/utils"
 	"github.com/google/logger"
 )
@@ -96,6 +98,24 @@ func UploadDocument(c *gin.Context) {
 		fileHashes = append(fileHashes, hash)
 
 		response = processAsset
+	}
+
+	notification := []db.Notification{
+		{
+			UserID:  signerKey,
+			Type:    "document",
+			Message: "Document uploaded successfully",
+		},
+		{
+			UserID:  form.RequiredSignatures,
+			Type:    "document",
+			Message: "You have been request by" + signerKey + " to sign a document",
+		},
+	}
+
+	_, err = db.NewNotificationService(db.GetDB().Database()).CreateNotification(c.Request.Context(), &notification)
+	if err != nil {
+		errorhandler.ReturnError(c, err, "failed to generate notification", http.StatusInternalServerError)
 	}
 
 	c.Set("fileHashes", fileHashes)

@@ -36,9 +36,18 @@ func NewNotificationService(db *mongo.Database) *NotificationService {
 	}
 }
 
-func (s *NotificationService) CreateNotification(ctx context.Context, notif *Notification) (*mongo.InsertOneResult, error) {
-	notif.Timestamp = time.Now()
-	result, err := s.collection.InsertOne(ctx, notif)
+func (s *NotificationService) CreateNotification(ctx context.Context, notif *[]Notification) (*mongo.InsertManyResult, error) {
+	for i := range *notif {
+		(*notif)[i].Timestamp = time.Now()
+		(*notif)[i].Read = false
+	}
+
+	notifications := make([]interface{}, len(*notif))
+	for i, n := range *notif {
+		notifications[i] = n
+	}
+
+	result, err := s.collection.InsertMany(ctx, notifications)
 	if err != nil {
 		return nil, err
 	}

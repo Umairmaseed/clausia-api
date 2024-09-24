@@ -3,7 +3,6 @@ package documents
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
@@ -92,18 +91,18 @@ func UpdateDocNameOrTimeout(c *gin.Context) {
 		return
 	}
 
-	notification := &db.Notification{
-		UserID:  ownerKey,
-		Type:    "document",
-		Message: "Document updated",
-		Metadata: map[string]string{
-			"documentKey": form.DocKey,
+	notification := []db.Notification{
+		{
+			UserID:  ownerKey,
+			Type:    "document",
+			Message: "Document updated",
+			Metadata: map[string]string{
+				"documentKey": form.DocKey,
+			},
 		},
-		Read:      false,
-		Timestamp: time.Now(),
 	}
 
-	_, err = db.NewNotificationService(db.GetDB().Database()).CreateNotification(c.Request.Context(), notification)
+	_, err = db.NewNotificationService(db.GetDB().Database()).CreateNotification(c.Request.Context(), &notification)
 	if err != nil {
 		errorhandler.ReturnError(c, err, "failed to generate notification", http.StatusInternalServerError)
 	}

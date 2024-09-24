@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
@@ -159,19 +158,19 @@ func SignDocument(c *gin.Context) {
 			return
 		}
 
-		notification := &db.Notification{
-			UserID:  ownerKey,
-			Type:    "document",
-			Message: "Document succeffuly signed by " + signer["name"].(string),
-			Metadata: map[string]string{
-				"document": fileName,
-				"status":   "accepted",
+		notification := []db.Notification{
+			{
+				UserID:  ownerKey,
+				Type:    "document",
+				Message: "Document succeffuly signed by " + signer["name"].(string),
+				Metadata: map[string]string{
+					"document": fileName,
+					"status":   "accepted",
+				},
 			},
-			Read:      false,
-			Timestamp: time.Now(),
 		}
 
-		_, err = db.NewNotificationService(db.GetDB().Database()).CreateNotification(c.Request.Context(), notification)
+		_, err = db.NewNotificationService(db.GetDB().Database()).CreateNotification(c.Request.Context(), &notification)
 		if err != nil {
 			errorhandler.ReturnError(c, err, "failed to generate notification", http.StatusInternalServerError)
 		}
