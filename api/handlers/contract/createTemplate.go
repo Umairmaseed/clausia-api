@@ -4,7 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
 	"github.com/goledgerdev/goprocess-api/chaincode"
+	"github.com/goledgerdev/goprocess-api/db"
 	"github.com/goledgerdev/goprocess-api/utils"
 	"github.com/google/logger"
 )
@@ -63,6 +65,19 @@ func CreateTemplate(c *gin.Context) {
 		logger.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
+	}
+
+	var notifications []db.Notification
+	notifications = append(notifications, db.Notification{
+		UserID:   userKey,
+		Type:     "template",
+		Message:  "Template " + form.Name + " created",
+		Metadata: map[string]string{"templateId": form.Id},
+	})
+
+	_, err = db.NewNotificationService(db.GetDB().Database()).CreateNotification(c.Request.Context(), &notifications)
+	if err != nil {
+		errorhandler.ReturnError(c, err, "failed to generate notification", http.StatusInternalServerError)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"template": contract})
