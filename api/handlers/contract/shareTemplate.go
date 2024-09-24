@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
 	"github.com/goledgerdev/goprocess-api/chaincode"
+	"github.com/goledgerdev/goprocess-api/db"
 	"github.com/goledgerdev/goprocess-api/utils"
 )
 
@@ -115,6 +116,18 @@ func ShareTemplate(c *gin.Context) {
 		if err != nil {
 			errorhandler.ReturnError(c, err, "Failed to send invite email", http.StatusInternalServerError)
 			return
+		}
+
+		var notifications []db.Notification
+		notifications = append(notifications, db.Notification{
+			UserID:   ledgerKey,
+			Type:     "template",
+			Message:  "An invitation to view a template has been sent to your email",
+			Metadata: map[string]string{"templateId": templateKey}})
+
+		_, err = db.NewNotificationService(db.GetDB().Database()).CreateNotification(c.Request.Context(), &notifications)
+		if err != nil {
+			errorhandler.ReturnError(c, err, "failed to generate notification", http.StatusInternalServerError)
 		}
 	}
 
