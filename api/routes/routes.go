@@ -8,6 +8,7 @@ import (
 	"github.com/goledgerdev/goprocess-api/api/handlers/auth"
 	"github.com/goledgerdev/goprocess-api/api/handlers/contract"
 	"github.com/goledgerdev/goprocess-api/api/handlers/documents"
+	"github.com/goledgerdev/goprocess-api/api/handlers/notification"
 	"github.com/goledgerdev/goprocess-api/api/routes/docs"
 	"github.com/goledgerdev/goprocess-api/websocket"
 
@@ -72,6 +73,8 @@ func AddRoutesToEngine(r *gin.Engine, wsServer *websocket.WebSocketServer) {
 	r.POST("/addparticipantrequest", contract.AddParticipantRequest)
 	r.POST("/sharetemplate", contract.ShareTemplate)
 	r.POST("/viewsharedtemplate", contract.ViewSharedTemplate)
+
+	r.GET("/getnotifications", notification.GetNotifications)
 
 	// serve swagger files
 	docs.SwaggerInfo.BasePath = "/api"
