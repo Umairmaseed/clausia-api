@@ -10,10 +10,12 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
 	"github.com/goledgerdev/goprocess-api/chaincode"
+	"github.com/goledgerdev/goprocess-api/db"
 	"github.com/goledgerdev/goprocess-api/utils"
 )
 
@@ -93,7 +95,7 @@ func SignDocument(c *gin.Context) {
 	}
 	ledgerKey := signerKey["@key"].(string)
 
-	_, err = chaincode.GetSigner(ledgerKey)
+	signer, err := chaincode.GetSigner(ledgerKey)
 	if err != nil {
 		errorhandler.ReturnError(c, err, "Failed to retrieve signer asset", http.StatusInternalServerError)
 		return
@@ -156,6 +158,24 @@ func SignDocument(c *gin.Context) {
 			c.Abort()
 			return
 		}
+
+		notification := &db.Notification{
+			UserID:  ownerKey,
+			Type:    "document",
+			Message: "Document succeffuly signed by " + signer["name"].(string),
+			Metadata: map[string]string{
+				"document": fileName,
+				"status":   "accepted",
+			},
+			Read:      false,
+			Timestamp: time.Now(),
+		}
+
+		_, err = db.NewNotificationService(db.GetDB().Database()).CreateNotification(c.Request.Context(), notification)
+		if err != nil {
+			errorhandler.ReturnError(c, err, "failed to generate notification", http.StatusInternalServerError)
+		}
+
 		c.JSON(http.StatusOK, rejectedDoc)
 		return
 	}
