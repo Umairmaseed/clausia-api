@@ -35,8 +35,11 @@ func GetNotifications(c *gin.Context) {
 		return
 	}
 
-	_, err = db.NewNotificationService(db.GetDB().Database()).GetNotificationsByUser(c.Request.Context(), signerKey, form.limits)
+	notifications, err := db.NewNotificationService(db.GetDB().Database()).GetNotificationsByUser(c.Request.Context(), signerKey, form.limits)
 	if err != nil {
 		errorhandler.ReturnError(c, err, "failed to generate notification", http.StatusInternalServerError)
 	}
+
+	c.JSON(http.StatusOK, gin.H{"notifications": notifications})
+
 }
