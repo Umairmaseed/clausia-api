@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
 	"github.com/goledgerdev/goprocess-api/chaincode"
+	"github.com/goledgerdev/goprocess-api/db"
 	"github.com/goledgerdev/goprocess-api/utils"
 )
 
@@ -75,6 +76,29 @@ func RemoveClause(c *gin.Context) {
 	if err != nil {
 		errorhandler.ReturnError(c, err, "Failed to remove clause from contract", http.StatusInternalServerError)
 		return
+	}
+
+	var notifications []db.Notification
+
+	notifications = append(notifications, db.Notification{
+		UserID:   contractOwner["@key"].(string),
+		Type:     "contract",
+		Message:  "Clause " + form.Clause + " removed from contract",
+		Metadata: map[string]string{"contractID": updatedContractAsset["@key"].(string)},
+	})
+
+	for _, participant := range firstResult["participants"].([]interface{}) {
+		notifications = append(notifications, db.Notification{
+			UserID:   participant.(map[string]interface{})["@key"].(string),
+			Type:     "contract",
+			Message:  "Clause " + form.Clause + " removed from contract",
+			Metadata: map[string]string{"contractID": updatedContractAsset["@key"].(string)},
+		})
+	}
+
+	_, err = db.NewNotificationService(db.GetDB().Database()).CreateNotification(c.Request.Context(), &notifications)
+	if err != nil {
+		errorhandler.ReturnError(c, err, "failed to generate notification", http.StatusInternalServerError)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"contract": updatedContractAsset})
