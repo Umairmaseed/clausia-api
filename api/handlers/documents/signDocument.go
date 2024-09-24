@@ -162,10 +162,10 @@ func SignDocument(c *gin.Context) {
 			{
 				UserID:  ownerKey,
 				Type:    "document",
-				Message: "Document succeffuly signed by " + signer["name"].(string),
+				Message: "Document rejected by " + signer["name"].(string),
 				Metadata: map[string]string{
 					"document": fileName,
-					"status":   "accepted",
+					"status":   "rejected",
 				},
 			},
 		}
@@ -314,6 +314,23 @@ func SignDocument(c *gin.Context) {
 		errorhandler.ReturnError(c, err, "failed to save document to ledger:", http.StatusInternalServerError)
 		c.Abort()
 		return
+	}
+
+	notification := []db.Notification{
+		{
+			UserID:  ownerKey,
+			Type:    "document",
+			Message: "Document succeffuly signed by " + signer["name"].(string),
+			Metadata: map[string]string{
+				"document": fileName,
+				"status":   "accepted",
+			},
+		},
+	}
+
+	_, err = db.NewNotificationService(db.GetDB().Database()).CreateNotification(c.Request.Context(), &notification)
+	if err != nil {
+		errorhandler.ReturnError(c, err, "failed to generate notification", http.StatusInternalServerError)
 	}
 
 	c.JSON(http.StatusOK, res)

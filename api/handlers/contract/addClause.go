@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
 	"github.com/goledgerdev/goprocess-api/chaincode"
+	"github.com/goledgerdev/goprocess-api/db"
 	"github.com/goledgerdev/goprocess-api/utils"
 )
 
@@ -95,6 +96,38 @@ func AddClause(c *gin.Context) {
 	if err != nil {
 		errorhandler.ReturnError(c, err, "Failed to add clause to contract", http.StatusInternalServerError)
 		return
+	}
+
+	var notifications []db.Notification
+
+	notifications = append(notifications, db.Notification{
+		UserID:  signerKey,
+		Type:    "contract",
+		Message: "Clause added successfully",
+	})
+
+	participants, ok := firstResult["participants"].([]interface{})
+	if ok {
+		for _, participant := range participants {
+			participantMap, ok := participant.(map[string]interface{})
+			if ok {
+				if userID, ok := participantMap["@key"].(string); ok {
+					notifications = append(notifications, db.Notification{
+						UserID:  userID,
+						Type:    "contract",
+						Message: "A new clause has been added to the contract you are participating in.",
+						Metadata: map[string]string{
+							"contractId": form.Id,
+						},
+					})
+				}
+			}
+		}
+	}
+
+	_, err = db.NewNotificationService(db.GetDB().Database()).CreateNotification(c.Request.Context(), &notifications)
+	if err != nil {
+		errorhandler.ReturnError(c, err, "failed to generate notification", http.StatusInternalServerError)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"contract": updatedContractAsset})
