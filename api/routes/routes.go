@@ -75,7 +75,7 @@ func AddRoutesToEngine(r *gin.Engine, wsServer *websocket.WebSocketServer) {
 	r.POST("/viewsharedtemplate", contract.ViewSharedTemplate)
 
 	r.GET("/getnotifications", notification.GetNotifications)
-	r.GET("/deletenotification", notification.DeleteNotification)
+	r.POST("/deletenotification", notification.DeleteNotification)
 
 	// serve swagger files
 	docs.SwaggerInfo.BasePath = "/api"
