@@ -9,6 +9,7 @@ import (
 	"github.com/goledgerdev/goprocess-api/api/handlers/contract"
 	"github.com/goledgerdev/goprocess-api/api/handlers/documents"
 	"github.com/goledgerdev/goprocess-api/api/handlers/notification"
+	"github.com/goledgerdev/goprocess-api/api/handlers/user"
 	"github.com/goledgerdev/goprocess-api/api/routes/docs"
 	"github.com/goledgerdev/goprocess-api/websocket"
 
@@ -79,6 +80,8 @@ func AddRoutesToEngine(r *gin.Engine, wsServer *websocket.WebSocketServer) {
 	r.POST("/readnotifications", notification.ReadNotifications)
 	r.POST("/unreadnotifications", notification.UnreadNotifications)
 	r.GET("/getunreadnotifications", notification.GetUnreadNotifications)
+
+	r.GET("/user/info", user.GetUserInfo)
 
 	// serve swagger files
 	docs.SwaggerInfo.BasePath = "/api"
