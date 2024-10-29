@@ -11,13 +11,14 @@ import (
 	"github.com/google/logger"
 )
 
-func CreateSignerTransaction(cpf, email, name, phone string) (map[string]interface{}, error) {
+func CreateSignerTransaction(cpf, email, name, phone, userName string) (map[string]interface{}, error) {
 	path := os.Getenv("ORG_URL") + "/invoke/createSigner"
 	reqMap := map[string]interface{}{
-		"cpf":   cpf,
-		"email": email,
-		"name":  name,
-		"phone": phone,
+		"cpf":      cpf,
+		"email":    email,
+		"name":     name,
+		"phone":    phone,
+		"userName": userName,
 	}
 
 	body, err := json.Marshal(reqMap)

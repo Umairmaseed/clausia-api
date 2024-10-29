@@ -42,6 +42,8 @@ func AddRoutesToEngine(r *gin.Engine, wsServer *websocket.WebSocketServer) {
 	})
 
 	r.Use(a.AuthMiddleware())
+	r.POST("/checkpw", a.CheckPw)
+
 	r.POST("/uploaddocument", documents.UploadDocument)
 	r.POST("/signdocument", documents.SignDocument)
 	r.POST("/canceldocument", documents.CancelDocument)
@@ -53,6 +55,7 @@ func AddRoutesToEngine(r *gin.Engine, wsServer *websocket.WebSocketServer) {
 	r.GET("/expectedsignatures", documents.ExpectedUserSignatures)
 	r.GET("/getdocument", documents.GetDoc)
 	r.GET("/listsuccessfulsignatures", documents.ListSuccessfulSignatures)
+	r.GET("/pendingsignatures", documents.PendingSignatures)
 
 	r.POST("/createcontract", contract.CreateContract)
 	r.POST("/addclause", contract.AddClause)
