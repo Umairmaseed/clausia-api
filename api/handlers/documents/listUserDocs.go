@@ -59,8 +59,15 @@ func ListUserDocs(c *gin.Context) {
 	}
 
 	resultArray, ok := docAsset["result"].([]interface{})
-	if !ok || len(resultArray) == 0 {
-		errorhandler.ReturnError(c, fmt.Errorf("No documents found"), "No documents found", http.StatusNotFound)
+	if !ok {
+		errorhandler.ReturnError(c, fmt.Errorf("unexpected response format"), "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(resultArray) == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"documents": []interface{}{},
+		})
 		return
 	}
 
