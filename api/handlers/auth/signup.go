@@ -66,7 +66,7 @@ func (a *Auth) SignUp(c *gin.Context) {
 		return
 	}
 
-	_, err = chaincode.CreateSignerTransaction(cpf, email, form.Name, phone)
+	_, err = chaincode.CreateSignerTransaction(cpf, email, form.Name, phone, username)
 	if err != nil {
 		logger.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())
