@@ -26,7 +26,7 @@ func ListSuccessfulSignatures(c *gin.Context) {
 
 	queryMap := map[string]interface{}{
 		"@assetType": "document",
-		"successfulSignature": map[string]interface{}{
+		"successfulSignatures": map[string]interface{}{
 			"$elemMatch": map[string]interface{}{
 				"@assetType": "user",
 				"@key":       signerKey,
