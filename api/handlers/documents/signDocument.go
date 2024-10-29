@@ -47,7 +47,7 @@ func SignDocument(c *gin.Context) {
 		errorhandler.ReturnError(c, err, "Failed to bind form data", http.StatusBadRequest)
 		return
 	}
-	var SignDocument bool = form.RejectSignatures
+	var rejectedSign bool = form.RejectSignatures
 
 	// Retrieving document from blockchain
 	asset, err := chaincode.GetDoc(form.DocKey)
@@ -124,9 +124,8 @@ func SignDocument(c *gin.Context) {
 			return
 		}
 	}
-
 	// if Signer reject to sign the document
-	if !SignDocument {
+	if rejectedSign {
 
 		requiredSigners := convertToSigners(requiredSignatures)
 		successfulSigners := convertToSigners(successfulSignatures)
@@ -245,6 +244,8 @@ func SignDocument(c *gin.Context) {
 		errorhandler.ReturnError(c, err, "Unable to read response from signing service", http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Println("Response from signing service:", string(resBody))
 
 	var res signResponse
 	if err := json.Unmarshal(resBody, &res); err != nil {
