@@ -34,22 +34,17 @@ func ListSuccessfulSignatures(c *gin.Context) {
 		},
 	}
 
-	docAsset, err := chaincode.SearchAsset(queryMap)
+	docAsset, err := chaincode.SearchAssetTx(queryMap)
 	if err != nil {
 		errorhandler.ReturnError(c, err, "Failed to search for documents", http.StatusInternalServerError)
 		return
 	}
 
-	resultArray, ok := docAsset["result"].([]interface{})
-
 	var response interface{}
-	if ok && len(resultArray) > 0 {
-		response = resultArray
-	} else if ok {
+	if len(docAsset) > 0 {
+		response = docAsset
+	} else if len(docAsset) == 0 {
 		response = []interface{}{}
-	} else {
-		errorhandler.ReturnError(c, fmt.Errorf("failed to parse result"), "failed to parse result", http.StatusInternalServerError)
-		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{

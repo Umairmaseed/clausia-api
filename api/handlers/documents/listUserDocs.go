@@ -52,19 +52,13 @@ func ListUserDocs(c *gin.Context) {
 		queryMap["status"] = statusFloat
 	}
 
-	docAsset, err := chaincode.SearchAsset(queryMap)
+	docAsset, err := chaincode.SearchAssetTx(queryMap)
 	if err != nil {
 		errorhandler.ReturnError(c, err, "Failed to search for documents", http.StatusInternalServerError)
 		return
 	}
 
-	resultArray, ok := docAsset["result"].([]interface{})
-	if !ok {
-		errorhandler.ReturnError(c, fmt.Errorf("unexpected response format"), "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if len(resultArray) == 0 {
+	if len(docAsset) == 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"documents": []interface{}{},
 		})
@@ -72,7 +66,7 @@ func ListUserDocs(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"documents": resultArray,
+		"documents": docAsset,
 	})
 
 }
