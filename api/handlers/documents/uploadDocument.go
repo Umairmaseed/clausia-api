@@ -70,7 +70,7 @@ func UploadDocument(c *gin.Context) {
 		}
 
 		hash := fmt.Sprintf("%x", sha256.Sum256(fbytes))
-		filename := hash + "-" + f.Filename
+		filename := f.Filename
 		s3Url, err := utils.UploadFileToS3(fbytes, filename)
 		if err != nil {
 			logger.Error(err)
