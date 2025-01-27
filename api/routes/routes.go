@@ -58,6 +58,7 @@ func AddRoutesToEngine(r *gin.Engine, wsServer *websocket.WebSocketServer) {
 	r.GET("/pendingsignatures", documents.PendingSignatures)
 
 	r.POST("/createcontract", contract.CreateContract)
+	r.GET("/getusercontracts", contract.GetUserContracts)
 	r.POST("/addclause", contract.AddClause)
 	r.POST("/removeclause", contract.RemoveClause)
 	r.POST("/addclauses", contract.AddMultipleClauses)
