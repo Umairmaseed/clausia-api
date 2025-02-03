@@ -3,6 +3,7 @@ package contract
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
@@ -19,13 +20,19 @@ type addClauseForm struct {
 	Parameters             map[string]interface{}   `form:"parameters"`
 	Input                  map[string]interface{}   `form:"input"`
 	Dependencies           []map[string]interface{} `form:"dependencies"`
-	ActionType             float64                  `form:"actionType" binding:"required"`
+	ActionType             string                   `form:"actionType" binding:"required"`
 }
 
 func AddClause(c *gin.Context) {
 	var form addClauseForm
 	if err := c.ShouldBind(&form); err != nil {
 		errorhandler.ReturnError(c, err, "Failed to bind request form: ", http.StatusBadRequest)
+		return
+	}
+
+	actionType, err := strconv.ParseFloat(form.ActionType, 64)
+	if err != nil {
+		errorhandler.ReturnError(c, err, "Failed to convert actionType to float64", http.StatusBadRequest)
 		return
 	}
 
@@ -73,7 +80,7 @@ func AddClause(c *gin.Context) {
 	reqMap := map[string]interface{}{
 		"autoExecutableContract": form.AutoExecutableContract,
 		"id":                     form.Id,
-		"actionType":             form.ActionType,
+		"actionType":             actionType,
 	}
 
 	if form.Description != "" {
