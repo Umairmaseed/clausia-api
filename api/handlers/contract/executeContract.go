@@ -13,13 +13,7 @@ func ExecuteContract() {
 		return
 	}
 
-	for _, contract := range contracts {
-		contractMap, ok := contract.(map[string]interface{})
-		if !ok {
-			logger.Errorf("unexpected contract format")
-			continue
-		}
-
+	for _, contractMap := range contracts {
 		reqMap := map[string]interface{}{
 			"contract": contractMap,
 		}
