@@ -68,6 +68,7 @@ func AddRoutesToEngine(r *gin.Engine, wsServer *websocket.WebSocketServer) {
 	r.POST("/addreferencedate", contract.AddReferenceDate)
 	r.POST("/addevaluatedate", contract.AddEvaluateDate)
 	r.POST("/addinputstocheckfine", contract.AddInputsToCheckFine)
+	r.POST("/addstoredvaluetogetcredit", contract.AddStoredValueToGetCredit)
 	r.POST("/addreviewtocontract", contract.AddReviewToContract)
 	r.POST("/addinputstomakepayment", contract.AddInputsToMakePayment)
 	r.POST("/cancelcontract", contract.CancelContract)
