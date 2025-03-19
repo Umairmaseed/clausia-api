@@ -63,7 +63,6 @@ func AddReviewToContract(c *gin.Context) {
 	}
 	reviewReq["rating"] = form.Rating
 	reviewReq["date"] = form.Date
-	reviewReq["contract_id"] = firstResult
 
 	if form.Comments != "" {
 		reviewReq["comments"] = form.Comments
