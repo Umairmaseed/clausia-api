@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
@@ -20,7 +21,7 @@ type addInputsToMakePaymentType struct {
 	PayPalTransactionID string                 `form:"payPalTransactionID"`
 	Payment             float64                `form:"payment" binding:"required"`
 	Receipt             *multipart.FileHeader  `form:"Receipt"`
-	FinalPayment        bool                   `form:"finalPayment" binding:"required"`
+	FinalPayment        string                   `form:"finalPayment" binding:"required"`
 }
 
 func AddInputsToMakePayment(c *gin.Context) {
@@ -30,10 +31,16 @@ func AddInputsToMakePayment(c *gin.Context) {
 		return
 	}
 
+	finalPaymentBool, err := strconv.ParseBool(form.FinalPayment)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid finalPayment value, must be 'true' or 'false'"})
+		return
+	}
+
 	reqMap := map[string]interface{}{
 		"clause":       form.Clause,
 		"payment":      form.Payment,
-		"finalPayment": form.FinalPayment,
+		"finalPayment": finalPaymentBool,
 		"date":         form.Date,
 	}
 
