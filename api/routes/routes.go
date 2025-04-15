@@ -82,6 +82,7 @@ func AddRoutesToEngine(r *gin.Engine, wsServer *websocket.WebSocketServer) {
 	r.POST("/addparticipantrequest", contract.AddParticipantRequest)
 	r.POST("/sharetemplate", contract.ShareTemplate)
 	r.POST("/viewsharedtemplate", contract.ViewSharedTemplate)
+	r.GET("/getdateswithclause", contract.GetDatesWithCLause)
 
 	r.GET("/getnotifications", notification.GetNotifications)
 	r.POST("/deletenotification", notification.DeleteNotification)
