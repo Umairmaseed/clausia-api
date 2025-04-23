@@ -10,10 +10,12 @@ import (
 )
 
 type addInputsToCheckFine struct {
-	Clause          map[string]interface{} `form:"clause" binding:"required"`
-	ReferenceValue  *float64               `form:"referenceValue"`
-	DailyPercentage *float64               `form:"dailyPercentage"`
-	Days            *float64               `form:"days"`
+	Clause              map[string]interface{} `form:"clause" binding:"required"`
+	ReferenceValue      *float64               `form:"referenceValue"`
+	DailyPercentage     *float64               `form:"dailyPercentage"`
+	Days                *float64               `form:"days"`
+	ReferenceClauseDays bool                   `json:"referenceClauseDays"`
+	ReferenceClauseName string                 `json:"referenceClauseName"`
 }
 
 func AddInputsToCheckFine(c *gin.Context) {
@@ -40,6 +42,12 @@ func AddInputsToCheckFine(c *gin.Context) {
 	}
 	if form.Days != nil {
 		reqMap["days"] = *form.Days
+	}
+	if form.ReferenceClauseDays {
+		reqMap["referenceClauseDays"] = form.ReferenceClauseDays
+	}
+	if form.ReferenceClauseName != "" {
+		reqMap["referenceClauseName"] = form.ReferenceClauseName
 	}
 
 	updatedClause, err := chaincode.AddInputsToCheckFine(reqMap)
