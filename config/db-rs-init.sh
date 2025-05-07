@@ -11,7 +11,7 @@ var config = {
     "members": [
         {
             "_id": 0,
-            "host": "goprocess-db:27017", 
+            "host": "clausia-db:27017", 
             "priority": 1
         }
     ]

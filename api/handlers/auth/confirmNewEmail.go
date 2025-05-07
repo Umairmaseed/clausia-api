@@ -9,8 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	cognito "github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
 	"github.com/gin-gonic/gin"
-	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
 	"github.com/google/logger"
+	"github.com/umairmaseed/clausia-api/api/handlers/errorhandler"
 )
 
 type verifyEmail struct {

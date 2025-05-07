@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define container names
-DB_CONTAINER="goprocess-db"
+DB_CONTAINER="clausia-db"
 DOCKER_COMPOSE_FILE="docker-compose-db.yml"
 INIT_SCRIPT_PATH="./config/db-rs-init.sh"
 

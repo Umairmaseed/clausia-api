@@ -18,7 +18,7 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/goledgerdev/go-sign/logger"
+	"github.com/umairmaseed/go-sign/logger"
 )
 
 // type Details struct {

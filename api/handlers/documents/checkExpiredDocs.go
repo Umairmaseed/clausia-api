@@ -1,8 +1,8 @@
 package documents
 
 import (
-	"github.com/goledgerdev/goprocess-api/chaincode"
 	"github.com/google/logger"
+	"github.com/umairmaseed/clausia-api/chaincode"
 )
 
 func CheckExpiredDocs() {

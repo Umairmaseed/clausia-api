@@ -1,7 +1,7 @@
 version: "3.7"
 
 networks:
-  goprocess-cc-net:
+  clausia-cc-net:
     external: true
 
 services:
@@ -9,7 +9,7 @@ services:
     build:
       dockerfile: Dockerfile
       context: .
-    container_name: goprocess-api
+    container_name: clausia-api
     restart: unless-stopped
     ports:
       - 8080:8080
@@ -17,17 +17,17 @@ services:
       - .env
     working_dir: /api
     extra_hosts:
-    - "host.docker.internal:host-gateway"
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./:/api
     networks:
-      - goprocess-cc-net
+      - clausia-cc-net
 
-  ca.goprocess.org:
+  ca.clausia.org:
     image: hyperledger/fabric-ca:1.5
     environment:
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
-      - FABRIC_CA_SERVER_CA_NAME=ca-goprocess
+      - FABRIC_CA_SERVER_CA_NAME=ca-clausia
       - FABRIC_CA_SERVER_TLS_ENABLED=true
       - FABRIC_CA_SERVER_PORT=10054
       - FABRIC_CA_SERVER_COMPATIBILITY_MODE_V1_3=false
@@ -40,6 +40,6 @@ services:
         source: ./config/fabric-ca-server-config.yaml
         target: /etc/hyperledger/fabric-ca-server/fabric-ca-server-config.yaml
         read_only: true
-    container_name: ca.goprocess.org
+    container_name: ca.clausia.org
     networks:
-      - goprocess-cc-net
+      - clausia-cc-net

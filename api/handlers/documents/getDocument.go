@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
-	"github.com/goledgerdev/goprocess-api/chaincode"
+	"github.com/umairmaseed/clausia-api/api/handlers/errorhandler"
+	"github.com/umairmaseed/clausia-api/chaincode"
 )
 
 type DocumentHistoryEntry struct {

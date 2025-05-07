@@ -72,7 +72,7 @@ organizations:
 certificateAuthorities:
   ca.org1.example.com:
     # [Optional] Default: Infer from hostname
-    url: https://ca.goprocess.org:10054
+    url: https://ca.clausia.org:10054
     tlsCACerts:
       path: config/tlscert.pem
       # client:

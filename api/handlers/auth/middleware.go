@@ -16,9 +16,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-	"github.com/goledgerdev/goprocess-api/utils"
 	"github.com/google/logger"
 	"github.com/joho/godotenv"
+	"github.com/umairmaseed/clausia-api/utils"
 )
 
 type requestClaims struct {

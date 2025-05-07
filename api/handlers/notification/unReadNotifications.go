@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
-	"github.com/goledgerdev/goprocess-api/db"
+	"github.com/umairmaseed/clausia-api/api/handlers/errorhandler"
+	"github.com/umairmaseed/clausia-api/db"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

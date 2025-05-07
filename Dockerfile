@@ -10,7 +10,7 @@ COPY . .
 RUN go mod download
 
 # Build the Go ccapi
-RUN go build -o goprocess-api
+RUN go build -o clausia-api
 
 # Use an official Alpine runtime as a parent image
 FROM alpine:latest
@@ -41,7 +41,7 @@ RUN mkdir config
 COPY ./config config
 
 # Copy the ccapi binary from the build container to the current directory in the Alpine container
-COPY --from=build /api/goprocess-api /usr/bin/goprocess-api
+COPY --from=build /api/clausia-api /usr/bin/clausia-api
 
 # Run the ccapi binary
-CMD ["goprocess-api"]
+CMD ["clausia-api"]

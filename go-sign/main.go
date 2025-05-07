@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/goledgerdev/go-sign/api"
-	"github.com/goledgerdev/go-sign/logger"
+	"github.com/umairmaseed/go-sign/api"
+	"github.com/umairmaseed/go-sign/logger"
 )
 
 var log = logger.Logger().Sugar()

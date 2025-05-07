@@ -7,14 +7,14 @@ import (
 )
 
 func SendInviteEmail(to, msg string) error {
-	from := os.Getenv("GOPROCESS_EMAIL")
+	from := os.Getenv("clausia_EMAIL")
 	if from == "" {
-		return fmt.Errorf("failed to find goprocess email")
+		return fmt.Errorf("failed to find clausia email")
 	}
 
-	password := os.Getenv("GOPROCESS_EMAIL_PASSWORD")
+	password := os.Getenv("clausia_EMAIL_PASSWORD")
 	if password == "" {
-		return fmt.Errorf("failed to find goprocess email password")
+		return fmt.Errorf("failed to find clausia email password")
 	}
 
 	fmt.Println("Sending email from: ", from)

@@ -18,20 +18,20 @@ else
   echo "tls-cert.pem does not exist in the config directory."
 fi
 
-# Wait for the ca.goprocess.org container to be up and running
-echo "Waiting for ca.goprocess.org container to be up..."
-while ! docker ps | grep -q "ca.goprocess.org"; do
+# Wait for the ca.clausia.org container to be up and running
+echo "Waiting for ca.clausia.org container to be up..."
+while ! docker ps | grep -q "ca.clausia.org"; do
   sleep 1
 done
 
 # Wait for the fabric-ca server to generate the tls-cert.pem
 echo "Waiting for tls-cert.pem to be generated..."
-while ! docker exec ca.goprocess.org [ -f /etc/hyperledger/fabric-ca-server/tls-cert.pem ]; do
+while ! docker exec ca.clausia.org [ -f /etc/hyperledger/fabric-ca-server/tls-cert.pem ]; do
   sleep 1
 done
 
-# Copy the tls-cert.pem from the ca.goprocess.org container to the local config directory
+# Copy the tls-cert.pem from the ca.clausia.org container to the local config directory
 echo "Copying tls-cert.pem to the local config directory..."
-docker cp ca.goprocess.org:/etc/hyperledger/fabric-ca-server/tls-cert.pem ./config/tlscert.pem
+docker cp ca.clausia.org:/etc/hyperledger/fabric-ca-server/tls-cert.pem ./config/tlscert.pem
 
 echo "tls-cert.pem has been copied successfully."

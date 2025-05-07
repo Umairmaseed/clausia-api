@@ -5,13 +5,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/goledgerdev/goprocess-api/api/handlers/auth"
-	"github.com/goledgerdev/goprocess-api/api/handlers/contract"
-	"github.com/goledgerdev/goprocess-api/api/handlers/documents"
-	"github.com/goledgerdev/goprocess-api/api/handlers/notification"
-	"github.com/goledgerdev/goprocess-api/api/handlers/user"
-	"github.com/goledgerdev/goprocess-api/api/routes/docs"
-	"github.com/goledgerdev/goprocess-api/websocket"
+	"github.com/umairmaseed/clausia-api/api/handlers/auth"
+	"github.com/umairmaseed/clausia-api/api/handlers/contract"
+	"github.com/umairmaseed/clausia-api/api/handlers/documents"
+	"github.com/umairmaseed/clausia-api/api/handlers/notification"
+	"github.com/umairmaseed/clausia-api/api/handlers/user"
+	"github.com/umairmaseed/clausia-api/api/routes/docs"
+	"github.com/umairmaseed/clausia-api/websocket"
 
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"

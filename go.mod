@@ -1,4 +1,4 @@
-module github.com/goledgerdev/goprocess-api
+module github.com/umairmaseed/clausia-api
 
 go 1.19
 

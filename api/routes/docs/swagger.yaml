@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
-  description: Documentation of the GoProcess API. 
+  description: Documentation of the clausia API.
   version: "1.0"
-  title: GoProcess API
+  title: clausia API
 tags:
   - name: Basic Operations
 paths:
@@ -13,7 +13,7 @@ paths:
       summary: Ping
       description: Check if API is on
       responses:
-        '200':
+        "200":
           description: OK
           content:
             none: {}

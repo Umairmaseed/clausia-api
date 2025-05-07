@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/goledgerdev/goprocess-api/chaincode"
 	"github.com/google/logger"
+	"github.com/umairmaseed/clausia-api/chaincode"
 )
 
 type createTemplateClauseForm struct {

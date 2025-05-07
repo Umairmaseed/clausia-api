@@ -9,11 +9,11 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/goledgerdev/goprocess-api/api/handlers/contract"
-	"github.com/goledgerdev/goprocess-api/api/handlers/documents"
-	"github.com/goledgerdev/goprocess-api/api/server"
-	"github.com/goledgerdev/goprocess-api/db"
-	"github.com/goledgerdev/goprocess-api/websocket"
+	"github.com/umairmaseed/clausia-api/api/handlers/contract"
+	"github.com/umairmaseed/clausia-api/api/handlers/documents"
+	"github.com/umairmaseed/clausia-api/api/server"
+	"github.com/umairmaseed/clausia-api/db"
+	"github.com/umairmaseed/clausia-api/websocket"
 )
 
 func main() {

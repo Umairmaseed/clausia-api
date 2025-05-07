@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/goledgerdev/go-sign/pdfsign"
+	"github.com/umairmaseed/go-sign/pdfsign"
 )
 
 func TestSignDocument(t *testing.T) {

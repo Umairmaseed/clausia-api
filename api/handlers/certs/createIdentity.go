@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/goledgerdev/goprocess-api/certs"
+	"github.com/umairmaseed/clausia-api/certs"
 )
 
 func CreateIdentityHandler(c *gin.Context, username string, commonName string, password string) ([]byte, error) {

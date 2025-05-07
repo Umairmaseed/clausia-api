@@ -14,9 +14,9 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/goledgerdev/go-sign/logger"
-	"github.com/goledgerdev/go-sign/pdfsign"
 	qrcode "github.com/skip2/go-qrcode"
+	"github.com/umairmaseed/go-sign/logger"
+	"github.com/umairmaseed/go-sign/pdfsign"
 	"software.sslmate.com/src/go-pkcs12"
 )
 

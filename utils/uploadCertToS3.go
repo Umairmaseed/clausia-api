@@ -3,8 +3,8 @@ package utils
 import (
 	"os"
 
-	"github.com/goledgerdev/goprocess-api/s3"
 	"github.com/google/logger"
+	"github.com/umairmaseed/clausia-api/s3"
 )
 
 func UploadCertToS3(cert []byte, certName string) (string, error) {

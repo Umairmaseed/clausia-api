@@ -86,7 +86,7 @@ tls:
 #############################################################################
 ca:
   # Name of this CA
-  name: ca-goprocess
+  name: ca-clausia
   # Key file (is only used to import a private key into BCCSP)
   keyfile:
   # Certificate file (default: ca-cert.pem)
@@ -307,7 +307,7 @@ signing:
 #     CA certificates though it can still issue end entity certificates.
 ###########################################################################
 csr:
-  cn: GOPROCESS
+  cn: clausia
   keyrequest:
     algo: ecdsa
     size: 256
@@ -315,11 +315,11 @@ csr:
     - C: BR
       ST: "SAO PAULO"
       L: SAO PAULO
-      O: GOPROCESS BY GOLEDGER
+      O: clausia BY GOLEDGER
       OU: CA
   hosts:
     - localhost
-    - ca.goprocess.org
+    - ca.clausia.org
     - host.docker.internal
 
   ca:

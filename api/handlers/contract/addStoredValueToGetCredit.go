@@ -4,13 +4,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
-	"github.com/goledgerdev/goprocess-api/chaincode"
+	"github.com/umairmaseed/clausia-api/api/handlers/errorhandler"
+	"github.com/umairmaseed/clausia-api/chaincode"
 )
 
 type addStoredValueToGetCreditForm struct {
-	Clause          map[string]interface{} `form:"clause" binding:"required"`
-	StoredValue  *float64               `form:"storedValue" binding:"required"`
+	Clause      map[string]interface{} `form:"clause" binding:"required"`
+	StoredValue *float64               `form:"storedValue" binding:"required"`
 }
 
 func AddStoredValueToGetCredit(c *gin.Context) {

@@ -5,8 +5,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/gin-gonic/gin"
-	"github.com/goledgerdev/goprocess-api/utils"
 	"github.com/google/logger"
+	"github.com/umairmaseed/clausia-api/utils"
 
 	cognito "github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
 )

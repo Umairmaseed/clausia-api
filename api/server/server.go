@@ -11,10 +11,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/goledgerdev/goprocess-api/api/routes"
-	"github.com/goledgerdev/goprocess-api/certs"
-	"github.com/goledgerdev/goprocess-api/env"
-	"github.com/goledgerdev/goprocess-api/websocket"
+	"github.com/umairmaseed/clausia-api/api/routes"
+	"github.com/umairmaseed/clausia-api/certs"
+	"github.com/umairmaseed/clausia-api/env"
+	"github.com/umairmaseed/clausia-api/websocket"
 )
 
 func defaultServer(r *gin.Engine, port string) *http.Server {

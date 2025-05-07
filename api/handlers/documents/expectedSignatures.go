@@ -6,10 +6,10 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/goledgerdev/goprocess-api/api/handlers/errorhandler"
-	"github.com/goledgerdev/goprocess-api/chaincode"
-	"github.com/goledgerdev/goprocess-api/utils"
 	"github.com/google/logger"
+	"github.com/umairmaseed/clausia-api/api/handlers/errorhandler"
+	"github.com/umairmaseed/clausia-api/chaincode"
+	"github.com/umairmaseed/clausia-api/utils"
 )
 
 type expectedUserform struct {

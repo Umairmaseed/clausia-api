@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/goledgerdev/goprocess-api/utils"
 	"github.com/google/logger"
 	"github.com/gorilla/websocket"
+	"github.com/umairmaseed/clausia-api/utils"
 )
 
 type Client struct {

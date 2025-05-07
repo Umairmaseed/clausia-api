@@ -1,4 +1,4 @@
-module github.com/goledgerdev/go-sign
+module github.com/umairmaseed/go-sign
 
 go 1.17
 
